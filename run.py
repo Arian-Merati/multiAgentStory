@@ -102,10 +102,10 @@ def run_self_refine_single(model, processor, task, i, method, num_refine=1, **kw
     return log_outputs
 
 def run_confidence_assessment_single(model, processor,task, i, method, **kwargs):
-    print("\tidx:", i, "start self refine...")
+    print("\tidx:", i, "start confidence assessment...")
     log_outputs = {}
     answers = []
-    i = 0
+    j = 0
     question_prompts, questions = task.get_input_prompt(i, method=method, phase="question", **kwargs)
     for question_prompt, question in zip(question_prompts, questions):
         confidence = 0
@@ -116,8 +116,8 @@ def run_confidence_assessment_single(model, processor,task, i, method, **kwargs)
             assessment_prompts.append(assessment_prompt)
             confidence = get_probability_of_true(model, processor, assessment_prompt, MODEL_CONFIG["device"])
             print(f"Confidence for question '{question}': {confidence:.2f}")
-        i += 1
-        log_outputs[f"assessment_prompt{i}"] = assessment_prompts
+        j += 1
+        log_outputs[f"assessment_prompt{j}"] = assessment_prompts
         answers.append(question_output["unwrapped_text"])
     answers_str = " ".join(answers)
     write_prompt = task.get_input_prompt(i, method=method, phase='write', answers=answers_str)
@@ -131,7 +131,7 @@ def run_confidence_assessment_single(model, processor,task, i, method, **kwargs)
     
     
 def run_confidence_assessment(model, processor, task, method, output_file):
-    print(f"\n--- Starting Self-Refine Evaluation on {len(task)} Instances ---")
+    print(f"\n--- Starting confidence assessment Evaluation on {len(task)} Instances ---")
     all_logs = []
     start_time = time.time()
 

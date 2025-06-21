@@ -5,6 +5,7 @@ import requests
 import torch
 
 SYSTEM_PROMPT = "You are an AI assistant that helps people find information."
+#SYSTEM_PROMPT = ""
 
 
 def load_gemma_model(model_id, device):
@@ -62,9 +63,70 @@ def generate_text_with_gemma(model, processor, prompt, device):
     return decoded
 
 
+# def get_probability_of_true(model, processor, prompt, device):
+#     """
+#     Generates a response and calculates the probability of the model choosing '(A) True'.
+#     """
+#     messages = [
+#         {
+#             "role": "system",
+#             "content": [{"type": "text", "text": SYSTEM_PROMPT}]
+#         },
+#         {
+#             "role": "user",
+#             "content": [
+#                 {"type": "text", "text": prompt},
+#             ]
+#         }
+#     ]
+#     inputs = processor.apply_chat_template(
+#         messages, add_generation_prompt=True, tokenize=True,
+#         return_dict=True, return_tensors="pt"
+#     ).to(device)
+
+#     input_len = inputs["input_ids"].shape[-1]
+
+#     with torch.inference_mode():
+#         # Set output_scores to True to get the logits
+#         generation_output = model.generate(
+#             **inputs,
+#             max_new_tokens=5,  # We only need the next few tokens
+#             do_sample=False,
+#             output_scores=True,
+#             return_dict_in_generate=True # Makes the output a dict
+#         )
+
+#     # Get the logits for the first generated token
+#     first_generated_token_logits = generation_output.scores[0][0]
+
+#     # Apply softmax to get probabilities
+#     stable_logits = first_generated_token_logits.to(torch.float32)
+#     probabilities = F.softmax(stable_logits, dim=-1)
+
+#     # Get the token IDs for '(A)' and 'True'
+#     token_id_A = processor.tokenizer.encode("(A)", add_special_tokens=False)[0]
+#     token_id_True = processor.tokenizer.encode("True", add_special_tokens=False)[0]
+
+#     # Extract the probabilities for these tokens
+#     prob_A = probabilities[token_id_A].item()
+#     prob_True = probabilities[token_id_True].item()
+
+#     # The model might generate "(A)" or "True" as the first token.
+#     # We can check the probability of both and decide how to interpret.
+#     # For this specific prompt, the model is most likely to generate "(A)" first.
+#     # Therefore, we will return the probability of "(A)".
+
+#     decoded = processor.decode(generation_output.sequences[0][input_len:], skip_special_tokens=True)
+#     print(f"Generated text: {decoded}")
+
+#     return prob_A
+
+
+
 def get_probability_of_true(model, processor, prompt, device):
     """
-    Generates a response and calculates the probability of the model choosing '(A) True'.
+    Calculates the probability of the model choosing '(A)' as the next token
+    by performing a direct forward pass instead of using model.generate().
     """
     messages = [
         {
@@ -83,38 +145,24 @@ def get_probability_of_true(model, processor, prompt, device):
         return_dict=True, return_tensors="pt"
     ).to(device)
 
-    input_len = inputs["input_ids"].shape[-1]
-
     with torch.inference_mode():
-        # Set output_scores to True to get the logits
-        generation_output = model.generate(
-            **inputs,
-            max_new_tokens=5,  # We only need the next few tokens
-            do_sample=False,
-            output_scores=True,
-            return_dict_in_generate=True # Makes the output a dict
-        )
+        # Perform a direct forward pass to get the logits
+        outputs = model(**inputs)
+        # Get the logits for the very last token in the input sequence
+        next_token_logits = outputs.logits[0, -1, :]
 
-    # Get the logits for the first generated token
-    first_generated_token_logits = generation_output.scores[0][0]
+    # Cast logits to float32 for stable softmax calculation
+    stable_logits = next_token_logits.to(torch.float32)
+    probabilities = F.softmax(stable_logits, dim=-1)
 
-    # Apply softmax to get probabilities
-    probabilities = F.softmax(first_generated_token_logits, dim=-1)
-
-    # Get the token IDs for '(A)' and 'True'
+    # Get the token ID for '(A)'
     token_id_A = processor.tokenizer.encode("(A)", add_special_tokens=False)[0]
-    token_id_True = processor.tokenizer.encode("True", add_special_tokens=False)[0]
-
-    # Extract the probabilities for these tokens
     prob_A = probabilities[token_id_A].item()
-    prob_True = probabilities[token_id_True].item()
-
-    # The model might generate "(A)" or "True" as the first token.
-    # We can check the probability of both and decide how to interpret.
-    # For this specific prompt, the model is most likely to generate "(A)" first.
-    # Therefore, we will return the probability of "(A)".
-
-    decoded = processor.decode(generation_output.sequences[0][input_len:], skip_special_tokens=True)
-    print(f"Generated text: {decoded}")
+    
+    # Optional: You can still print the model's top choice for debugging
+    top_token_id = torch.argmax(probabilities).item()
+    top_token_prob = probabilities[top_token_id].item()
+    top_token_str = processor.tokenizer.decode([top_token_id])
+    print(f"Model's top prediction is '{top_token_str}' with confidence {top_token_prob:.4f}")
 
     return prob_A

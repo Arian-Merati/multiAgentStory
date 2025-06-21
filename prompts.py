@@ -211,7 +211,7 @@ Proposed Answer: {proposed_answer}
 Is the proposed answer:
     (A) True
     (B) False
-The proposed answer is:
+The proposed answer is: (
 '''
 
 confidence_assessment_write_prompt = ''' Write a short and coherent story about {topic} that incorporates the following {n} points: {answers}'''
