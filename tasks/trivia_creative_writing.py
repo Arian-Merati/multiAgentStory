@@ -121,11 +121,15 @@ class TriviaCreativeWritingTask(Task):
                     return response.split("Answer:")[1].strip(), True
                 elif "answer:" in response:
                     return response.split("answer:")[1].strip(), True
+                else:
+                    return response, False
             elif phase == "assess":
                 if "The proposed answer is:" in response:
                     return response.split("The proposed answer is:")[1].strip(), True
                 elif "the proposed answer is:" in response:
                     return response.split("the proposed answer is:")[1].strip(), True
+                else:
+                    return response, False
             elif phase == 'write':
                 return response, True
         else:

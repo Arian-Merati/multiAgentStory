@@ -117,4 +117,4 @@ def get_probability_of_true(model, processor, prompt, device):
     decoded = processor.decode(generation_output.sequences[0][input_len:], skip_special_tokens=True)
     print(f"Generated text: {decoded}")
 
-    return decoded, prob_A
+    return prob_A

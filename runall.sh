@@ -58,11 +58,11 @@
 # python run.py --method "one_at_a_time_plan"
 # echo "Finished running with method: one_at_a_time_plan."
 
-echo "" # Add a blank line for better readability
+# echo "" # Add a blank line for better readability
 
-echo "Running with method: self_refine"
-python run.py --method "self_refine"
-echo "Finished running with method: self_refine."
+# echo "Running with method: self_refine"
+# python run.py --method "self_refine"
+# echo "Finished running with method: self_refine."
 
 echo "" # Add a blank line for better readability
 

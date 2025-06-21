@@ -11,17 +11,17 @@ MODEL_CONFIG = {
     "device": "mps",
 }
 TASK_FILE = "trivia_creative_writing_100_n_5.jsonl"
-SYSTEM_PROMPT = "You are an AI assistant that helps people find information."
+# SYSTEM_PROMPT = "You are an AI assistant that helps people find information."
 
 def save_progress(logs, output_file):
     with open(output_file, "w") as f:
         json.dump(logs, f, indent=4)
 
-def process_single_instance(model, processor, task, i, method, prompt=None, test_output=True):
+def process_single_instance(model, processor, task, i, method, prompt=None, test_output=True, **kwargs):
     if prompt is None:
-        prompt = task.get_input_prompt(i, method=method)
+        prompt = task.get_input_prompt(i, method=method, **kwargs)
     raw_generated_text = generate_text_with_gemma(model, processor, prompt, MODEL_CONFIG["device"])
-    unwrapped_text, _ = task.prompt_unwrap(raw_generated_text, method=method)
+    unwrapped_text, _ = task.prompt_unwrap(raw_generated_text, method=method, **kwargs)
     if test_output:
         eval_info = task.test_output(i, unwrapped_text)
     else:
@@ -111,7 +111,7 @@ def run_confidence_assessment_single(model, processor,task, i, method, **kwargs)
         confidence = 0
         assessment_prompts = []
         while confidence <= 0.5:
-            question_output = process_single_instance(model, processor, task, i, method, prompt=question_prompt, test_output=False)
+            question_output = process_single_instance(model, processor, task, i, method, prompt=question_prompt, test_output=False, phase="question")
             assessment_prompt = task.get_input_prompt(i, method=method, phase="assess", question=question, proposed_answer=question_output["unwrapped_text"])
             assessment_prompts.append(assessment_prompt)
             confidence = get_probability_of_true(model, processor, assessment_prompt, MODEL_CONFIG["device"])
@@ -121,7 +121,7 @@ def run_confidence_assessment_single(model, processor,task, i, method, **kwargs)
         answers.append(question_output["unwrapped_text"])
     answers_str = " ".join(answers)
     write_prompt = task.get_input_prompt(i, method=method, phase='write', answers=answers_str)
-    write_output = process_single_instance(model, processor, task, i, method, prompt=write_prompt, test_output=True)
+    write_output = process_single_instance(model, processor, task, i, method, prompt=write_prompt, test_output=True, phase="write")
     log_outputs["answers"] = answers
     log_outputs["question_prompts"] = question_prompts
     log_outputs["write_prompt"] = write_prompt
@@ -170,6 +170,8 @@ def main():
     # Run appropriate evaluation
     if args.method == 'self_refine':
         run_self_refine(model, processor, task, args.method, args.output_file, args.num_refine)
+    elif args.method == 'confidence_assessment':
+        run_confidence_assessment(model, processor, task, args.method, args.output_file)
     else:
         run_default(model, processor, task, args.method, args.output_file)
 
