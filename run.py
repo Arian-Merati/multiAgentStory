@@ -55,7 +55,7 @@ def run_self_refine(model, processor, task, method, output_file, num_refine=1):
     all_logs = []
     start_time = time.time()
 
-    for i in range(len(task)):
+    for i in range (82, len(task)):  # Start from 82 to skip the first 82 instances
         print(f"Processing instance {i + 1}/{len(task)}...")
         log_outputs = run_self_refine_single(model, processor, task, i, method, num_refine)
         if log_outputs:

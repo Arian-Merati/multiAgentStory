@@ -156,7 +156,7 @@ def get_probability_of_true(model, processor, prompt, device):
     probabilities = F.softmax(stable_logits, dim=-1)
 
     # Get the token ID for '(A)'
-    token_id_A = processor.tokenizer.encode("(A)", add_special_tokens=False)[0]
+    token_id_A = processor.tokenizer.encode("A", add_special_tokens=False)[0]
     prob_A = probabilities[token_id_A].item()
     
     # Optional: You can still print the model's top choice for debugging
