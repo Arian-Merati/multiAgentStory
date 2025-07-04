@@ -165,6 +165,16 @@ Story:
 Story here.
 '''
 
+double_check_single_prompt = '''
+Question: {question}
+
+Proposed Answer: {proposed_answer}
+
+Please double-check the proposed answer for factual correctness, and write a revised answer if necessary. If the proposed answer is correct, simply repeat it. If it is incorrect, provide the correct answer.
+
+Revised Answer:
+'''
+
 one_at_a_time_focus_prompt = '''Firstly, think carefully about each of the following {n} questions, focusing on one at a time: {questions}.
 
 After you have thought through each question, write a short and coherent story about {topic} that incorporates the answers to all the questions. Make sure the story is engaging and that all trivia answers are factually correct.
@@ -215,6 +225,79 @@ The proposed answer is:
 '''
 
 confidence_assessment_write_prompt = ''' Write a short and coherent story about {topic} that incorporates the following {n} points: {answers}'''
+
+
+conflict_plan_prompt = '''
+Given a Creative Writing Task, describe the central conflict in detail (more than 5 sentences). The description should answer the following questions:
+⋆ What’s the protagonist’s main goal in this story?
+⋆ Why do they want it?
+⋆ What’s stopping them from achieving it?
+{scratchpad}
+'''
+
+character_plan_prompt = '''
+Given a Creative Writing Task and the Central Conflict, describe the characters in detailed bullet points (more than 5 sentences for each character). The description should answer the following questions:
+⋆ What do the characters sound like? Are they talkative or quiet? What kind of slang do they use? What is their sense of humor like?
+⋆ What do they look like? Do they have any defining gestures? What’s the first thing people notice about them?
+⋆ What are their motivations and internal characteristics? What are their flaws? What are their values? What are they afraid of? How will they change and grow over the course of this story?
+{scratchpad}
+'''
+
+setting_plan_prompt = '''
+Given a Creative Writing Task, the Central Conflict and the Character Descriptions describe the setting in detail (more than 5 sentences). The description should answer the following questions:
+⋆ Where does the story take place? Is it set in a fictional world, or is it simply set in someone’s backyard?
+⋆ When does the story take place? What decade is it set in? How much time elapses over the course of the story?
+{scratchpad}
+'''
+
+plot_plan_prompt = '''
+Given a Creative Writing Task, the Central Conflict, the Character Descriptions and the Setting, describe the key plot points in detailed bullet points.
+{scratchpad}
+'''
+
+finalizer_writing_prompt = '''
+Given a Creative Writing Task, the Central Conflict, the Character Descriptions, the Setting and the Key Plot Points, write a story using the information below.
+{scratchpad}
+'''
+
+exposition_writing_prompt = '''
+Given a Creative Writing Task, the Central Conflict, the Character Descriptions, the Setting and the Key Plot Points, continue the story by writing the {section} part.
+Focus only on the {section} part of the story. Do not write about the following parts of the story. Do not end the story.
+{scratchpad}
+'''
+
+rising_action_writing_prompt = '''
+Given a Creative Writing Task, the Central Conflict, the Character Descriptions, the Setting, the Key Plot Points and the Exposition, continue the story by writing the {section} part.
+Begin your portion of the story in a way that naturally flows from the previous ending.
+Match the writing style, vocabulary, and overall mood of the existing text. Do not re-explain details or events that have already been described.
+Focus only on the {section} part of the story. Do not write about the following parts of the story. Do not end the story.
+{scratchpad}
+'''
+
+climax_writing_prompt = '''
+Given a Creative Writing Task, the Central Conflict, the Character Descriptions, the Setting, the Key Plot Points, the Exposition and the Rising Action, continue the story by writing the {section} part.
+Begin your portion of the story in a way that naturally flows from the previous ending.
+Match the writing style, vocabulary, and overall mood of the existing text. Do not re-explain details or events that have already been described.
+Focus only on the {section} part of the story. Do not write about the following parts of the story. Do not end the story.
+{scratchpad}
+'''
+
+falling_action_writing_prompt = '''
+Given a Creative Writing Task, the Central Conflict, the Character Descriptions, the Setting, the Key Plot Points, the Exposition, the Rising Action and the Climax, continue the story by writing the {section} part.
+Begin your portion of the story in a way that naturally flows from the previous ending.
+Match the writing style, vocabulary, and overall mood of the existing text. Do not re-explain details or events that have already been described.
+Focus only on the {section} part of the story. Do not write about the following parts of the story. Do not end the story.
+{scratchpad}
+'''
+
+resolution_writing_prompt = '''
+Given a Creative Writing Task, the Central Conflict, the Character Descriptions, the Setting, the Key Plot Points, the Exposition, the Rising Action, the Climax and the Falling Action, continue the story by writing the {section} part.
+Begin your portion of the story in a way that naturally flows from the previous ending.
+Match the writing style, vocabulary, and overall mood of the existing text. Do not re-explain details or events that have already been described.
+{scratchpad}
+'''
+
+
 
 
 

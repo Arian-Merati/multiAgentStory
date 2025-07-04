@@ -49,7 +49,7 @@ import torch
 
 # 1. Explicitly define the device
 device = "mps"
-model_id = "google/gemma-3-4b-it"
+model_id = "google/gemma-3-12b-it"
 
 # 2. Load the model and send it to the specified device.
 #    It's also a good practice to specify the torch_dtype here.
@@ -68,7 +68,7 @@ messages = [
     {
         "role": "user",
         "content": [
-            #{"type": "text", "text": "Write a short and coherent story about Superman that incorporates the answers to the following 5 questions: What was Warren Beatty's first movie? Which future Hollywood star got her break as Wonder Girl, Wonder Woman's sister Drusilla? Mickey Braddock in the 50s series Circus Boy found fame with which surname in which pop band? Which war veteran was Director of News & Special Events for ABC before find fame as a TV cop? What US sitcom was the first exported to Britain?"},
+            {"type": "text", "text": "Write a short and coherent story about Superman that incorporates the answers to the following 5 questions: What was Warren Beatty's first movie? Which future Hollywood star got her break as Wonder Girl, Wonder Woman's sister Drusilla? Mickey Braddock in the 50s series Circus Boy found fame with which surname in which pop band? Which war veteran was Director of News & Special Events for ABC before find fame as a TV cop? What US sitcom was the first exported to Britain?"},
             #{"type": "text", "text": "Answer the following five questions first: What was Warren Beatty's first movie? Which future Hollywood star got her break as Wonder Girl, Wonder Woman's sister Drusilla? Mickey Braddock in the 50s series Circus Boy found fame with which surname in which pop band? Which war veteran was Director of News & Special Events for ABC before find fame as a TV cop? What US sitcom was the first exported to Britain? Now incorporate them into a short and coherent story about Superman."},z
         ]
     }
