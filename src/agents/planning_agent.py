@@ -1,4 +1,6 @@
 from .base_agent import BaseAgent
+from prompts import *
+
 
 class PlanningAgent(BaseAgent):
     def __init__(self, model, processor, device):
@@ -32,28 +34,28 @@ class PlanningAgent(BaseAgent):
         print(" Planning complete.")
         return scratchpad
 
-    def _generate_conflict(self, idx: int, current_scratchpad: str) -> dict:
-        prompt = conflict_agent_prompt.format(scratchpad=current_scratchpad)
+    def _generate_conflict(self, idx: int, current_scratchpad: str):
+        prompt = conflict_plan_prompt.format(scratchpad=current_scratchpad)
         return self.process_single_instance(
-            i=idx, method="standard", prompt=prompt, test_output=False
+            i=idx, method="plan", prompt=prompt, test_output=False, phase="conflict"
         )
 
-    def _generate_characters(self, idx: int, current_scratchpad: str) -> dict:
-        prompt = character_agent_prompt.format(scratchpad=current_scratchpad)
+    def _generate_characters(self, idx: int, current_scratchpad: str):
+        prompt = character_plan_prompt.format(scratchpad=current_scratchpad)
         return self.process_single_instance(
-            i=idx, method="standard", prompt=prompt, test_output=False
+            i=idx, method="plan", prompt=prompt, test_output=False, phase="characters"
         )
 
-    def _generate_setting(self, idx: int, current_scratchpad: str) -> dict:
-        prompt = setting_agent_prompt.format(scratchpad=current_scratchpad)
+    def _generate_setting(self, idx: int, current_scratchpad: str):
+        prompt = setting_plan_prompt.format(scratchpad=current_scratchpad)
         return self.process_single_instance(
-            i=idx, method="standard", prompt=prompt, test_output=False
+            i=idx, method="plan", prompt=prompt, test_output=False, phase="setting"
         )
 
-    def _generate_plot(self, idx: int, current_scratchpad: str) -> dict:
-        prompt = plot_agent_prompt.format(scratchpad=current_scratchpad)
+    def _generate_plot(self, idx: int, current_scratchpad: str):
+        prompt = plot_plan_prompt.format(scratchpad=current_scratchpad)
         return self.process_single_instance(
-            i=idx, method="standard", prompt=prompt, test_output=False
+            i=idx, method="plan", prompt=prompt, test_output=False, phase="plot"
         )
 
         
