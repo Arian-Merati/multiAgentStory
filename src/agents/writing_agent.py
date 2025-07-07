@@ -1,59 +1,97 @@
 from .base_agent import BaseAgent
-from prompts import *
-
+from prompts import (
+    exposition_writing_prompt,
+    rising_action_writing_prompt,
+    climax_writing_prompt,
+    falling_action_writing_prompt,
+    resolution_writing_prompt
+)
 
 class WritingAgent(BaseAgent):
-    def __init__(self, model, processor, device):
-        super().__init__(model, processor, device)
-    
-    def write(self, i):
+    """
+    A self-contained agent that takes a completed plan and writes a full story,
+    section by section, following a narrative arc.
+    """
+    def __init__(self, *args, **kwargs):
+        """Initializes the WritingAgent by inheriting from BaseAgent."""
+        super().__init__(*args, **kwargs)
+
+    def write_story(self, idx):
         """
-        Plan the output of a single instance using Agent room planning.
+        Takes a plan scratchpad and writes a full story by sequentially writing
         """
-        print("\tidx:", i, "start writing...")
-        
-        initial_task_prompt = self.task.get_input_prompt(i, method="standard")
-        scratchpad = f"[Creative Writing Task]\n{initial_task_prompt}"
-        
-        print("  - Generating [Character Descriptions]...")
-        character_result = self._generate_characters(i, scratchpad)
-        scratchpad += f"\n\n[Character Descriptions]\n{character_result['unwrapped_text']}"
-        
-        print("  - Generating [Central Conflict]...")
-        conflict_result = self._generate_conflict(i, scratchpad)
-        scratchpad += f"\n\n[Central Conflict]\n{conflict_result['unwrapped_text']}"
+        print(f" Starting story writing pipeline for task index {idx}...")
 
-        print("  - Generating [Setting]...")
-        setting_result = self._generate_setting(i, scratchpad)
-        scratchpad += f"\n\n[Setting]\n{setting_result['unwrapped_text']}"
+        # The scratchpad starts with the full plan from the PlanningAgent.
+        final_story = []
 
-        print("  - Generating [Key Plot Points]...")
-        plot_result = self._generate_plot(i, scratchpad)
-        scratchpad += f"\n\n[Key Plot Points]\n{plot_result['unwrapped_text']}"
+        # --- Step 1: Write Exposition ---
+        print("  - Writing [Exposition]...")
+        exposition_result = self._write_exposition(self, idx)
+        exposition_text = exposition_result['unwrapped_text']
+        self.scratchpad += f"\n\n[Exposition]\n{exposition_text}"
+        final_story.append(exposition_text)
 
-        print(" Planning complete.")
-        return scratchpad
+        # --- Step 2: Write Rising Action ---
+        print("  - Writing [Rising Action]...")
+        rising_action_result = self._write_rising_action(self, idx)
+        rising_action_text = rising_action_result['unwrapped_text']
+        scratchpad += f"\n\n[Rising Action]\n{rising_action_text}"
+        final_story.append(rising_action_text)
 
-    def _generate_conflict(self, idx: int, current_scratchpad: str):
-        prompt = conflict_plan_prompt.format(scratchpad=current_scratchpad)
+        # --- Step 3: Write Climax ---
+        print("  - Writing [Climax]...")
+        climax_result = self._write_climax(self, idx)
+        climax_text = climax_result['unwrapped_text']
+        scratchpad += f"\n\n[Climax]\n{climax_text}"
+        final_story.append(climax_text)
+
+        # --- Step 4: Write Falling Action ---
+        print("  - Writing [Falling Action]...")
+        falling_action_result = self._write_falling_action(self, idx)
+        falling_action_text = falling_action_result['unwrapped_text']
+        scratchpad += f"\n\n[Falling Action]\n{falling_action_text}"
+        final_story.append(falling_action_text)
+
+        # --- Step 5: Write Resolution ---
+        print("  - Writing [Resolution]...")
+        resolution_result = self._write_resolution(self, idx)
+        resolution_text = resolution_result['unwrapped_text']
+        # No need to add the final part to the scratchpad if it's the end.
+        final_story.append(resolution_text)
+
+        print("✅ Story writing complete.")
+        # Join the parts of the story into a single string.
+        return "\n\n".join(final_story)
+
+    # --- Private methods for each writing step ---
+
+    def _write_exposition(self, idx):
+        prompt = exposition_writing_prompt.format(section="Exposition", scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="plan", prompt=prompt, test_output=False, phase="conflict"
+            i=idx, method="write", prompt=prompt, test_output=False, phase="exposition"
         )
 
-    def _generate_characters(self, idx: int, current_scratchpad: str):
-        prompt = character_plan_prompt.format(scratchpad=current_scratchpad)
+    def _write_rising_action(self, idx):
+        prompt = rising_action_writing_prompt.format(section="Rising Action", scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="plan", prompt=prompt, test_output=False, phase="characters"
+            i=idx, method="write", prompt=prompt, test_output=False, phase="rising_action"
         )
 
-    def _generate_setting(self, idx: int, current_scratchpad: str):
-        prompt = setting_plan_prompt.format(scratchpad=current_scratchpad)
+    def _write_climax(self, idx):
+        prompt = climax_writing_prompt.format(section="Climax", scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="plan", prompt=prompt, test_output=False, phase="setting"
+            i=idx, method="write", prompt=prompt, test_output=False, phase="climax"
         )
 
-    def _generate_plot(self, idx: int, current_scratchpad: str):
-        prompt = plot_plan_prompt.format(scratchpad=current_scratchpad)
+    def _write_falling_action(self, idx):
+        prompt = falling_action_writing_prompt.format(section="Falling Action", scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="plan", prompt=prompt, test_output=False, phase="plot"
+            i=idx, method="write", prompt=prompt, test_output=False, phase="falling_action"
+        )
+
+    def _write_resolution(self, idx):
+        prompt = resolution_writing_prompt.format(section="Resolution", scratchpad=self.scratchpad)
+        return self.process_single_instance(
+            i=idx, method="write", prompt=prompt, test_output=False, phase="resolution"
         )

@@ -18,7 +18,8 @@ class CheckingAgent(BaseAgent):
         double_check_prompt = task.get_input_prompt(i, method="double_check", **kwargs) 
         checked_output = self.process_single_instance(model, processor, task, i, method, prompt=double_check_prompt, test_output=False, **kwargs)
         verified_answer = checked_output['unwrapped_text']
-        
+        raw_generated_text = checked_output['raw_generated_text']
+        self.scratchpad += f"\n\n[Checking Answers To Questions]\n{raw_generated_text}"
         return verified_answer
     
     def confidence_assessment(self, model, processor, task, i, method, prompt=None, test_output=False, **kwargs):
@@ -65,6 +66,7 @@ class CheckingAgent(BaseAgent):
             double_check_output = self.process_single_instance(model, processor, task, i, method, prompt=checking_prompt, test_output=False, phase="assess")
             revised_answers.append(double_check_output["unwrapped_text"])
         answers_str = " ".join(revised_answers)
+        self.scratchpad += f"\n\n[Words To Include]\n{answers_str}"
            
         return revised_answers, answers_str
     

@@ -18,6 +18,7 @@ class BaseAgent:
     def __init__(self, model_id=MODEL_CONFIG["model_id"], device=MODEL_CONFIG["device"]):
         self.model, self.processor = load_gemma_model(model_id, device)
         self.task = trivia_creative_writing.TriviaCreativeWritingTask(file=TASK_FILE)
+        self.scratchpad = ""
         
     def process_single_instance(model, processor, task, i, method, prompt=None, test_output=True, **kwargs):
         if prompt is None:
