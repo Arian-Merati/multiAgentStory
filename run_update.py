@@ -44,6 +44,7 @@ def main():
     experiments = config['experiments']
     for experiment_name, agent_list in experiments.items():
         print(f"Running experiment: {experiment_name}")
+        scratchpad = ""
         for agent in agent_list:
             print(f"  Agent: {agent}")
             

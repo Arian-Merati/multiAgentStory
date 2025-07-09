@@ -17,7 +17,7 @@ class AnsweringAgent(BaseAgent):
         Get the gold label for the instance at index i.
         """
         random_answers = []
-        data = task.get_input(i, method=method, **kwargs)
+        data = self.task.get_input(i, method=method, **kwargs)
         answers = data['answers']
         for answer_list in answers:
             random_choice = random.choice(answer_list)
@@ -33,7 +33,7 @@ class AnsweringAgent(BaseAgent):
         """
         print("\tidx:", i, "answering one at a time...")
         answers = []
-        question_prompts, questions = task.get_input_prompt(i, method=method, phase="question", **kwargs)
+        question_prompts, questions = self.task.get_input_prompt(i, method=method, phase="question", **kwargs)
         for question_prompt, question in zip(question_prompts, questions):
             question_answer_output = self.process_single_instance(model, processor, task, i, method, prompt=checking_prompt, test_output=False, phase="assess")
             answers.append(question_answer_output["unwrapped_text"])
