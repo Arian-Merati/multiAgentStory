@@ -11,6 +11,19 @@ MODEL_CONFIG = {
     "model_id": "google/gemma-3-4b-it",
     "device": "mps",
 }
+
+AGENT_MAPPING = {
+    "gold_label": AnsweringAgent,
+    "oaat_answer": AnsweringAgent,
+    "confidence_assessment": CheckingAgent,
+    "double_check_all": CheckingAgent,
+    "double_check_oaat": CheckingAgent,
+    "plan_AR": PlanningAgent,
+    "plan_cot": PlanningAgent,
+    "write_AR": WritingAgent,
+    "write_standard": WritingAgent,
+}
+
 TASK_FILE = "trivia_creative_writing_100_n_5.jsonl"
 # SYSTEM_PROMPT = "You are an AI assistant that helps people find information."
 
@@ -45,8 +58,14 @@ def main():
     for experiment_name, agent_list in experiments.items():
         print(f"Running experiment: {experiment_name}")
         scratchpad = ""
-        for agent in agent_list:
-            print(f"  Agent: {agent}")
+        for agent_name in agent_list:
+            agent_class = AGENT_MAPPING[agent_name]
+            agent = agent_class(model, processor, MODEL_CONFIG["device"], scratchpad=scratchpad)
+                
+            if agent_name == 'gold_label':
+                
+                
+           
             
         
         

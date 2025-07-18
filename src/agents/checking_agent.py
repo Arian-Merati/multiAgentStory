@@ -8,10 +8,10 @@ from models import load_gemma_model, generate_text_with_gemma, get_probability_o
 from base_agent import BaseAgent
 
 class CheckingAgent(BaseAgent):
-    def __init__(self, model, processor, device):
-        super().__init__(model, processor, device)
+    def __init__(self, model, processor, device, scratchpad=""):
+        super().__init__(model, processor, device, scratchpad="")
         
-    def double_check(self, model, processor, task, i, method, prompt=None, test_output=False, **kwargs):
+    def double_check(self, model, processor, task, i, method, scratchpad, prompt=None, test_output=False, **kwargs):
         """
         Double-check the output of a single instance.
         """
@@ -19,10 +19,10 @@ class CheckingAgent(BaseAgent):
         checked_output = self.process_single_instance(model, processor, task, i, method, prompt=double_check_prompt, test_output=False, **kwargs)
         verified_answer = checked_output['unwrapped_text']
         raw_generated_text = checked_output['raw_generated_text']
-        self.scratchpad += f"\n\n[Checking Answers To Questions]\n{raw_generated_text}"
+        self.scratchpad += f"\n\n[Checking Answers To Questions] {raw_generated_text}"
         return verified_answer
     
-    def confidence_assessment(self, model, processor, task, i, method, prompt=None, test_output=False, **kwargs):
+    def confidence_assessment(self, model, processor, task, i, method, scratchpad, prompt=None, test_output=False, **kwargs):
         """
         Double-check the output of a single instance, one question at a time.
         """
@@ -54,19 +54,19 @@ class CheckingAgent(BaseAgent):
         return log_outputs
     
     
-    def double_check_one_at_a_time(self, model, processor, task, i, method, prompt=None, test_output=False, **kwargs):
+    def double_check_one_at_a_time(self, model, processor, task, i, method, scratchpad, proposed_answers_list, prompt=None, test_output=False, **kwargs):
         """
         Double-check the output of a single instance, one question at a time.
         """
         print("\tidx:", i, "double check one at a time...")
-        question_prompts, questions = task.get_input_prompt(i, method=method, phase="question", **kwargs)
+        question_prompts, questions_list = task.get_input_prompt(i, method="confidence_assessment", phase="question", **kwargs)
         revised_answers = []
-        for question, proposed_answer in zip(question, proposed_answer):
-            checking_prompt = task.get_input_prompt(i, method=method, phase="assess", question=question, proposed_answer=question_output["unwrapped_text"])
-            double_check_output = self.process_single_instance(model, processor, task, i, method, prompt=checking_prompt, test_output=False, phase="assess")
+        for question, proposed_answer in zip(questions_list, proposed_answers_list):
+            checking_prompt = task.get_input_prompt(i, method=method, question=question, proposed_answer=proposed_answer)
+            double_check_output = self.process_single_instance(model, processor, task, i, method, prompt=checking_prompt, test_output=False, **kwargs)
             revised_answers.append(double_check_output["unwrapped_text"])
         answers_str = " ".join(revised_answers)
-        self.scratchpad += f"\n\n[Words To Include]\n{answers_str}"
+        self.scratchpad = f"\n\n[Words To Include] {answers_str}"
            
         return revised_answers, answers_str
     

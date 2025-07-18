@@ -165,14 +165,15 @@ Story:
 Story here.
 '''
 
-double_check_single_prompt = '''
+double_check_one_at_a_time_prompt = '''
 Question: {question}
 
-Proposed Answer: {proposed_answer}
+Proposed answer: {proposed_answer}
 
 Please double-check the proposed answer for factual correctness, and write a revised answer if necessary. If the proposed answer is correct, simply repeat it. If it is incorrect, provide the correct answer.
 
-Revised Answer:
+Revised answer:
+Revised answer here.
 '''
 
 one_at_a_time_focus_prompt = '''Firstly, think carefully about each of the following {n} questions, focusing on one at a time: {questions}.
@@ -195,7 +196,7 @@ Your output should be of the following format:
 Answers:
 Your answers here.
 
-Double Check Answers:
+Double check answers:
 Double check the answers here.
 
 Plan:
@@ -216,7 +217,7 @@ Your answer here
 confidence_assessment_assess_prompt = '''
 Question: {question}
 
-Proposed Answer: {proposed_answer}
+Proposed answer: {proposed_answer}
 
 Is the proposed answer:
     (A) True
@@ -225,7 +226,6 @@ The proposed answer is:
 '''
 
 confidence_assessment_write_prompt = ''' Write a short and coherent story about {topic} that incorporates the following {n} points: {answers}'''
-
 
 conflict_plan_prompt = '''
 Given a Creative Writing Task, describe the central conflict in detail (more than 5 sentences). The description should answer the following questions:

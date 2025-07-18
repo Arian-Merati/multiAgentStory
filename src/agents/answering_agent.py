@@ -9,37 +9,39 @@ from models import load_gemma_model, generate_text_with_gemma, get_probability_o
 from base_agent import BaseAgent
 
 class AnsweringAgent(BaseAgent):
-    def __init__(self, model, processor, device):
-        super().__init__(model, processor, device)
+    def __init__(self, model, processor, device, scratchpad=""):
+        super().__init__(model, processor, device, scratchpad="")
         
-    def gold_label(self, i, method, **kwargs):
+    def gold_label(self, i, scratchpad):
         """
         Get the gold label for the instance at index i.
         """
         random_answers = []
-        data = self.task.get_input(i, method=method, **kwargs)
+        data = self.task.get_input(i)
         answers = data['answers']
         for answer_list in answers:
             random_choice = random.choice(answer_list)
             # Add the chosen answer to our new list
             random_answers.append(random_choice)
-        
-        return random_answers.join(", ")
+        words_to_include = random_answers.join(", ")
+        scratchpad += f"[Words To Include] {words_to_include}"
+        return random_answers
+       
     
-    
-    def one_at_a_time_answer(self, model, processor, task, i, method, prompt=None, test_output=False, **kwargs):
+    def one_at_a_time_answer(self, model, processor, task, i, method, scratchpad, prompt=None, test_output=False, **kwargs):
         """
-        Double-check the output of a single instance, one question at a time.
+        Answer questions one at a time for the instance at index i.
         """
         print("\tidx:", i, "answering one at a time...")
         answers = []
-        question_prompts, questions = self.task.get_input_prompt(i, method=method, phase="question", **kwargs)
+        question_prompts, questions = self.task.get_input_prompt(i, method="confidence_assessment", phase="question", **kwargs)
         for question_prompt, question in zip(question_prompts, questions):
-            question_answer_output = self.process_single_instance(model, processor, task, i, method, prompt=checking_prompt, test_output=False, phase="assess")
+            question_answer_output = self.process_single_instance(model, processor, task, i, method="confidence_assemssment", prompt=question_prompt, test_output=False)
             answers.append(question_answer_output["unwrapped_text"])
-        answers_str = " ".join(answers)
-           
-        return answers, answers_str
+        words_to_include = answers.join(", ")
+        scratchpad += f"[Words To Include] {words_to_include}"
+        return answers
+
             
         
 

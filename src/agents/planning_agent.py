@@ -3,8 +3,8 @@ from prompts import *
 
 
 class PlanningAgent(BaseAgent):
-    def __init__(self, model, processor, device):
-        super().__init__(model, processor, device)
+    def __init__(self, model, processor, device, scratchpad=""):
+        super().__init__(model, processor, device, scratchpad="")
         
 
     def plan(self, i):
@@ -14,7 +14,7 @@ class PlanningAgent(BaseAgent):
         print("\tidx:", i, "start planning...")
         
         initial_task_prompt = self.task.get_input_prompt(i, method="standard")
-        self.scratchpad = f"[Creative Writing Task]\n{initial_task_prompt}"
+        self.scratchpad += f"\n\n[Creative Writing Task]\n{initial_task_prompt}"
         
         print("  - Generating [Character Descriptions]...")
         character_result = self._generate_characters(i)

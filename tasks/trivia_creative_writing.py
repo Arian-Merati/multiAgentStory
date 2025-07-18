@@ -12,13 +12,10 @@ class TriviaCreativeWritingTask(Task):
         with open(path, "r") as f:
             self.data = [json.loads(line) for line in f]
 
-    def __len__(self) -> int:
-        return len(self.data)
-
     def get_input(self, idx: int):
         return self.data[idx]
 
-    def get_input_prompt(self, idx: int, method: str, **kwargs) -> str:
+    def get_input_prompt(self, idx, method, **kwargs):
         datapoint = self.data[idx]
         questions = datapoint["questions"]
         topic = datapoint["topic"]
@@ -37,26 +34,30 @@ class TriviaCreativeWritingTask(Task):
         #     input_prompt = spp_prompt_fixed_persona.format(n=n, questions=questions_str, topic=topic)
         # elif method == "spp_profile":
         #     input_prompt = spp_prompt_profile.format(n=n, questions=questions_str, topic=topic)
-        elif method == "questions_first":
-            input_prompt = questions_first_prompt.format(n=n, questions=questions_str, topic=topic)
-        elif method == "persona":
-            input_prompt = persona_prompt.format(n=n, questions=questions_str, topic=topic)
-        elif method == "structured_decomposition":
-            input_prompt = structured_decomposition_prompt.format(n=n, questions=questions_str, topic=topic)
+        # elif method == "questions_first":
+        #     input_prompt = questions_first_prompt.format(n=n, questions=questions_str, topic=topic)
+        # elif method == "persona":
+        #     input_prompt = persona_prompt.format(n=n, questions=questions_str, topic=topic)
+        # elif method == "structured_decomposition":
+        #     input_prompt = structured_decomposition_prompt.format(n=n, questions=questions_str, topic=topic)
         elif method == "double_check_questions":
             input_prompt = double_check_questions_prompt.format(n=n, questions=questions_str, topic=topic)
-        elif method == "one_at_a_time_focus":
-            input_prompt = one_at_a_time_focus_prompt.format(n=n, questions=questions_str, topic=topic)
-        elif method == "one_at_a_time_plan":
-            input_prompt = one_at_a_time_plan_prompt.format(n=n, questions=questions_str, topic=topic)
-        elif method == "self_refine":
-            phase = kwargs["phase"]
-            if phase == "init":
-                input_prompt = standard_prompt.format(n=n, questions=questions_str, topic=topic)
-            elif phase == "feedback":
-                input_prompt = self_refine_feedback_prompt.format(question_answer=kwargs["question_answer"])
-            elif phase == "refine":
-                input_prompt = self_refine_refinement_prompt.format(question_answer=kwargs["question_answer"], feedback=kwargs["feedback"])
+        elif method == "double_check_one_at_a_time":
+            input_prompt = double_check_one_at_a_time_prompt.format(question=kwargs['question'], proposed_answer=kwargs['proposed_answer'])
+        # elif method == "one_at_a_time_focus":
+        #     input_prompt = one_at_a_time_focus_prompt.format(n=n, questions=questions_str, topic=topic)
+        # elif method == "one_at_a_time_plan":
+        #     input_prompt = one_at_a_time_plan_prompt.format(n=n, questions=questions_str, topic=topic)
+        # elif method == "self_refine":
+        #     phase = kwargs["phase"]
+        #     if phase == "init":
+        #         input_prompt = standard_prompt.format(n=n, questions=questions_str, topic=topic)
+        #     elif phase == "feedback":
+        #         input_prompt = self_refine_feedback_prompt.format(question_answer=kwargs["question_answer"])
+        #     elif phase == "refine":
+        #         input_prompt = self_refine_refinement_prompt.format(question_answer=kwargs["question_answer"], feedback=kwargs["feedback"])
+        elif method == "one_at_a_time_answer":
+            input_prompt = confidence_assessment_question_prompt.format(question=kwargs['question'])
         elif method == "confidence_assessment":
             phase = kwargs["phase"]
             if phase == "question":
@@ -111,6 +112,14 @@ class TriviaCreativeWritingTask(Task):
                 return response.split("Final answer:")[1].strip(), True
             elif "final answer:" in response:
                 return response.split("final answer:")[1].strip(), True
+            else:
+                return response, False 
+            
+        elif method == "double_check_one_at_a_time":
+            if "Revised answer:" in response:
+                return response.split("Revised answer:")[1].strip(), True
+            elif "revised answer:" in response:
+                return response.split("revised answer:")[1].strip(), True
             else:
                 return response, False 
             
