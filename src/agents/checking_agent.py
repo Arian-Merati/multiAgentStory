@@ -27,6 +27,7 @@ class CheckingAgent(BaseAgent):
         Double-check the output of a single instance, one question at a time.
         """
         print("\tidx:", i, "start confidence assessment...")
+        self.scratchpad = scratchpad
         log_outputs = {}
         answers = []
         j = 0
@@ -50,6 +51,9 @@ class CheckingAgent(BaseAgent):
         log_outputs["question_prompts"] = question_prompts
         log_outputs["write_prompt"] = write_prompt
         log_outputs["write_output"] = write_output
+        
+        answers_str = " ".join(answers)
+        self.scratchpad = f"\n\n[Words To Include] {answers_str}"
             
         return log_outputs
     
@@ -59,6 +63,7 @@ class CheckingAgent(BaseAgent):
         Double-check the output of a single instance, one question at a time.
         """
         print("\tidx:", i, "double check one at a time...")
+        self.scratchpad = scratchpad
         question_prompts, questions_list = task.get_input_prompt(i, method="confidence_assessment", phase="question", **kwargs)
         revised_answers = []
         for question, proposed_answer in zip(questions_list, proposed_answers_list):

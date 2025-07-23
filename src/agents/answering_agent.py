@@ -16,6 +16,7 @@ class AnsweringAgent(BaseAgent):
         """
         Get the gold label for the instance at index i.
         """
+        self.scratchpad = scratchpad
         random_answers = []
         data = self.task.get_input(i)
         answers = data['answers']
@@ -33,10 +34,11 @@ class AnsweringAgent(BaseAgent):
         Answer questions one at a time for the instance at index i.
         """
         print("\tidx:", i, "answering one at a time...")
+        self.scratchpad = scratchpad
         answers = []
-        question_prompts, questions = self.task.get_input_prompt(i, method="confidence_assessment", phase="question", **kwargs)
+        question_prompts, questions = self.task.get_input_prompt(i, method=method, phase="question", **kwargs)
         for question_prompt, question in zip(question_prompts, questions):
-            question_answer_output = self.process_single_instance(model, processor, task, i, method="confidence_assemssment", prompt=question_prompt, test_output=False)
+            question_answer_output = self.process_single_instance(model, processor, task, i, method=method, prompt=question_prompt, test_output=False)
             answers.append(question_answer_output["unwrapped_text"])
         words_to_include = answers.join(", ")
         scratchpad += f"[Words To Include] {words_to_include}"

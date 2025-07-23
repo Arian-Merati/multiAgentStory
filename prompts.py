@@ -233,6 +233,8 @@ Given a Creative Writing Task, describe the central conflict in detail (more tha
 ⋆ Why do they want it?
 ⋆ What’s stopping them from achieving it?
 {scratchpad}
+
+Central conflict:
 '''
 
 character_plan_prompt = '''
@@ -241,6 +243,8 @@ Given a Creative Writing Task and the Central Conflict, describe the characters 
 ⋆ What do they look like? Do they have any defining gestures? What’s the first thing people notice about them?
 ⋆ What are their motivations and internal characteristics? What are their flaws? What are their values? What are they afraid of? How will they change and grow over the course of this story?
 {scratchpad}
+
+Character descriptions:
 '''
 
 setting_plan_prompt = '''
@@ -248,11 +252,15 @@ Given a Creative Writing Task, the Central Conflict and the Character Descriptio
 ⋆ Where does the story take place? Is it set in a fictional world, or is it simply set in someone’s backyard?
 ⋆ When does the story take place? What decade is it set in? How much time elapses over the course of the story?
 {scratchpad}
+
+Setting:
 '''
 
 plot_plan_prompt = '''
 Given a Creative Writing Task, the Central Conflict, the Character Descriptions and the Setting, describe the key plot points in detailed bullet points.
 {scratchpad}
+
+Key plot points:
 '''
 
 finalizer_writing_prompt = '''
@@ -264,6 +272,8 @@ exposition_writing_prompt = '''
 Given a Creative Writing Task, the Central Conflict, the Character Descriptions, the Setting and the Key Plot Points, continue the story by writing the {section} part.
 Focus only on the {section} part of the story. Do not write about the following parts of the story. Do not end the story.
 {scratchpad}
+
+Exposition:
 '''
 
 rising_action_writing_prompt = '''
@@ -272,6 +282,8 @@ Begin your portion of the story in a way that naturally flows from the previous 
 Match the writing style, vocabulary, and overall mood of the existing text. Do not re-explain details or events that have already been described.
 Focus only on the {section} part of the story. Do not write about the following parts of the story. Do not end the story.
 {scratchpad}
+
+Rising action:
 '''
 
 climax_writing_prompt = '''
@@ -280,6 +292,8 @@ Begin your portion of the story in a way that naturally flows from the previous 
 Match the writing style, vocabulary, and overall mood of the existing text. Do not re-explain details or events that have already been described.
 Focus only on the {section} part of the story. Do not write about the following parts of the story. Do not end the story.
 {scratchpad}
+
+Climax:
 '''
 
 falling_action_writing_prompt = '''
@@ -288,6 +302,8 @@ Begin your portion of the story in a way that naturally flows from the previous 
 Match the writing style, vocabulary, and overall mood of the existing text. Do not re-explain details or events that have already been described.
 Focus only on the {section} part of the story. Do not write about the following parts of the story. Do not end the story.
 {scratchpad}
+
+Falling action:
 '''
 
 resolution_writing_prompt = '''
@@ -295,6 +311,8 @@ Given a Creative Writing Task, the Central Conflict, the Character Descriptions,
 Begin your portion of the story in a way that naturally flows from the previous ending.
 Match the writing style, vocabulary, and overall mood of the existing text. Do not re-explain details or events that have already been described.
 {scratchpad}
+
+Resolution:
 '''
 
 

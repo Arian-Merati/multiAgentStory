@@ -7,11 +7,13 @@ class PlanningAgent(BaseAgent):
         super().__init__(model, processor, device, scratchpad="")
         
 
-    def plan(self, i):
+    def plan_ar(self, i, scratchpad):
         """
         Plan the output of a single instance using Agent room planning.
         """
         print("\tidx:", i, "start planning...")
+        
+        self.scratchpad = scratchpad
         
         initial_task_prompt = self.task.get_input_prompt(i, method="standard")
         self.scratchpad += f"\n\n[Creative Writing Task]\n{initial_task_prompt}"

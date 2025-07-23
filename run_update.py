@@ -2,6 +2,7 @@ import json
 import time
 import argparse
 import yaml
+import re
 
 # Import the specific components from your other files
 from tasks import trivia_creative_writing
@@ -30,8 +31,18 @@ TASK_FILE = "trivia_creative_writing_100_n_5.jsonl"
 def save_progress(logs, output_file):
     with open(output_file, "w") as f:
         json.dump(logs, f, indent=4)
-
-
+        
+def get_identifiers(scratchpad):
+    """
+    Extract identifiers from the scratchpad.
+    """
+    identifiers = re.findall(r'\[(.*?)\]', scratchpad)
+    last_identifier = identifiers.pop()
+    identifiers_str = ", the ".join(identifiers)
+    identifiers_str += " and the " + last_identifier 
+    
+    return identifiers_str
+    
 
 def main():
     parser = argparse.ArgumentParser()
@@ -57,12 +68,29 @@ def main():
     experiments = config['experiments']
     for experiment_name, agent_list in experiments.items():
         print(f"Running experiment: {experiment_name}")
-        scratchpad = ""
-        for agent_name in agent_list:
-            agent_class = AGENT_MAPPING[agent_name]
-            agent = agent_class(model, processor, MODEL_CONFIG["device"], scratchpad=scratchpad)
+        for i in range (len(task)):
+            scratchpad = ""
+            for agent_name in agent_list:
+                agent_class = AGENT_MAPPING[agent_name]
+                agent = agent_class(model, processor, MODEL_CONFIG["device"], scratchpad=scratchpad)
                 
-            if agent_name == 'gold_label':
+                identifiers = get_identifiers(scratchpad)
+               
+                if agent_name == 'gold_label':
+                    answers = agent.gold_label(i, scratchpad)
+                elif agent_name == 'one_at_a_time_answer':
+                    answers = agent.one_at_a_time_answer(model, processor, task, i, method="confidence_assessment", scratchpad=scratchpad)
+                elif agent_name == "double_check_one_at_a_time":
+                    revised_answers, answers_str = agent.double_check_one_at_a_time(model, processor, task, i, method="confidence_assessment", proposed_answers_list=answers, scratchpad=scratchpad)
+                elif agent_name == "confidence_assessment":
+                    log_outputs = agent.confidence_assessment(model, processor, task, i, method="confidence_assessment", scratchpad=scratchpad)
+                    answers = log_outputs["answers"]
+                elif agent_name == "plan_ar":
+                    agent.plan_ar(i, scratchpad=scratchpad, identifiers=identifiers)
+                elif agent_name == "plan_standard":
+                    agent
+                    
+                
                 
                 
            

@@ -141,5 +141,75 @@ class TriviaCreativeWritingTask(Task):
                     return response, False
             elif phase == 'write':
                 return response, True
+            
+        elif method == "plan_ar":
+            phase = kwargs["phase"]
+            if phase == "central_conflict":
+                if "Central conflict:" in response:
+                    return response.split("Central conflict:")[1].strip(), True
+                elif "central conflict" in response:
+                    return response.split("central conflict:")[1].strip(), True
+                else:
+                    return response, False
+            elif phase == "character":
+                if "Character descriptions:" in response:
+                    return response.split("Character descriptions:")[1].strip(), True
+                elif "character descriptions" in response:
+                    return response.split("character descriptions:")[1].strip(), True
+                else:
+                    return response, False
+            elif phase == "setting":
+                if "Setting:" in response:
+                    return response.split("Setting:")[1].strip(), True
+                elif "setting:" in response:
+                    return response.split("setting:")[1].strip(), True
+                else:
+                    return response, False
+            elif phase == "plot":
+                if "Key plot points:" in response:
+                    return response.split("Key plot points:")[1].strip(), True
+                elif "key plot points:" in response:
+                    return response.split("key plot points:")[1].strip(), True
+                else:
+                    return response, False
+                
+        elif method == "write_ar":
+            phase = kwargs["phase"]
+            if phase == "exposition":
+                if "Exposition:" in response:
+                    return response.split("Exposition:")[1].strip(), True
+                elif "the proposed answer is:" in response:
+                    return response.split("exposition:")[1].strip(), True
+                else:
+                    return response, False
+            elif phase == "rising_action":
+                if "Rising action:" in response:
+                    return response.split("Rising action:")[1].strip(), True
+                elif "rising action:" in response:
+                    return response.split("rising action:")[1].strip(), True
+                else:
+                    return response, False
+            elif phase == "climax":
+                if "Climax:" in response:
+                    return response.split("Climax:")[1].strip(), True
+                elif "climax:" in response:
+                    return response.split("climax:")[1].strip(), True
+                else:
+                    return response, False
+            elif phase == "falling_action":
+                if "Falling action:" in response:
+                    return response.split("Falling action:")[1].strip(), True
+                elif "falling action:" in response:
+                    return response.split("falling actions:")[1].strip(), True
+                else:
+                    return response, False
+            elif phase == "resolution":
+                if "Resolution:" in response:
+                    return response.split("Resolution:")[1].strip(), True
+                elif "resolution:" in response:
+                    return response.split("resolution:")[1].strip(), True
+                else:
+                    return response, False
+            
         else:
             raise NotImplementedError(f"method {method} not implemented")
