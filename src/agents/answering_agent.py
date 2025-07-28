@@ -27,6 +27,17 @@ class AnsweringAgent(BaseAgent):
         words_to_include = random_answers.join(", ")
         scratchpad += f"[Words To Include] {words_to_include}"
         return random_answers
+    
+    def answer_all(self, model, processor, task, i, method, scratchpad, prompt=None, test_output=False, **kwargs):
+        """
+        Answer all questions at once
+        """
+        qa_prompt = task.get_input_prompt(i, method="answer_all", **kwargs) 
+        question_answer_output = self.process_single_instance(model, processor, task, i, method="answer_all", prompt=qa_prompt, test_output=False, **kwargs)
+        answers = question_answer_output['unwrapped_text']
+        raw_generated_text = question_answer_output['raw_generated_text']
+        self.scratchpad += f"[Words To Include] {raw_generated_text}"
+        return answers, question_answer_output['evaluation']
        
     
     def one_at_a_time_answer(self, model, processor, task, i, method, scratchpad, prompt=None, test_output=False, **kwargs):
@@ -42,7 +53,7 @@ class AnsweringAgent(BaseAgent):
             answers.append(question_answer_output["unwrapped_text"])
         words_to_include = answers.join(", ")
         scratchpad += f"[Words To Include] {words_to_include}"
-        return answers
+        return answers, question_answer_output['evaluation']
 
             
         

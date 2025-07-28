@@ -1,20 +1,7 @@
 experiments:
-  first:
-    - ""
-    - "a"
-    - "b"
-    - "c"
-    - "d"
 
+  answer_all:
+    - "answer_all"
 
-  second:
-    - "a"
-    - "b"
-    - "c"
-    - "d"
-
-  third:
-    - "a"
-    - "b"
-    - "c"
-    - "d"
+  answer_one_at_a_time:
+    - "answer_one_at_a_time"

@@ -3,6 +3,7 @@ import re
 from tasks.base import Task, DATA_PATH
 from prompts import *
 import json
+import collections
 # from models import gpt
 
 class TriviaCreativeWritingTask(Task):
@@ -40,8 +41,8 @@ class TriviaCreativeWritingTask(Task):
         #     input_prompt = persona_prompt.format(n=n, questions=questions_str, topic=topic)
         # elif method == "structured_decomposition":
         #     input_prompt = structured_decomposition_prompt.format(n=n, questions=questions_str, topic=topic)
-        elif method == "double_check_questions":
-            input_prompt = double_check_questions_prompt.format(n=n, questions=questions_str, topic=topic)
+        elif method == "double_check_all":
+            input_prompt = double_check_all_prompt.format(n=n, questions=questions_str, topic=topic)
         elif method == "double_check_one_at_a_time":
             input_prompt = double_check_one_at_a_time_prompt.format(question=kwargs['question'], proposed_answer=kwargs['proposed_answer'])
         # elif method == "one_at_a_time_focus":
@@ -58,6 +59,8 @@ class TriviaCreativeWritingTask(Task):
         #         input_prompt = self_refine_refinement_prompt.format(question_answer=kwargs["question_answer"], feedback=kwargs["feedback"])
         elif method == "one_at_a_time_answer":
             input_prompt = confidence_assessment_question_prompt.format(question=kwargs['question'])
+        elif method == "answer_all":
+            input_prompt = answer_all_prompt.format(n=n, questions=questions_str)
         elif method == "confidence_assessment":
             phase = kwargs["phase"]
             if phase == "question":
@@ -73,19 +76,40 @@ class TriviaCreativeWritingTask(Task):
             raise NotImplementedError(f"method {method} not implemented")
         
         return input_prompt
+    
+    def f1_score(proposed_answer, gold_answers):
+        """
+        Calculate F1 score between proposed answer and gold answers.
+        """
+        for answer in gold_answers:
+            answer_tokens = answer.split()
+            proposed_tokens = proposed_answer.split()
+            common = collections.Counter(answer_tokens) & collections.Counter(proposed_tokens)
+            num_same = sum(common.values())
+            precision = 1.0 * len(num_same) / len(proposed_tokens)
+            recall = 1.0 * len(num_same) / len(answer_tokens)
+            f1 = (2 * precision * recall) / (precision + recall)
+            
+        return precision, recall, f1
+        
 
-    def test_output(self, idx: int, output: str):
+    def test_output(self, idx, output):
         # test whether the output includes all the answers of the trivia questions
         instance = self.data[idx]
         correct_count = 0
         question_count = len(instance["answers"])
         for ans_to_question in instance["answers"]:
             for ans in ans_to_question:
+                precision, recall, f1 = self.f1_score(output, ans)
                 # compare all to lower
                 if ans.lower() in output.lower():
                     correct_count += 1
                     break
-        info = {'correct_count': correct_count, 'question_count': question_count}
+                
+        info = {'correct_count': correct_count, 'question_count': question_count, 
+                'accuracy': correct_count / question_count, 'precision': precision, 
+                'recall': recall, 'f1': f1}
+        
         return info
 
     @staticmethod
@@ -122,6 +146,14 @@ class TriviaCreativeWritingTask(Task):
                 return response.split("revised answer:")[1].strip(), True
             else:
                 return response, False 
+            
+        elif method == "answer_all":
+            if "Answers:" in response:
+                return response.split("Answers:")[1].strip(), True
+            elif "answers:" in response:
+                return response.split("answers:")[1].strip(), True
+            else:
+                return response, False
             
         elif method == "confidence_assessment":
             phase = kwargs["phase"]

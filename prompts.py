@@ -113,57 +113,20 @@ Task: Write a short and coherent story about {topic} that incorporates the answe
 ###############  END OF PROMPTS USED IN PAPER ##########################################################################################################################################################################################################
 
 
-questions_first_prompt = '''Answer the following {n} questions first: {questions}
 
-Now incorporate them into a short and coherent story about {topic}.
-
-Answers:
-Answers to the questions here.
-
-Story:
-Story here.
-'''
-
-persona_prompt = '''You are an expert storyteller and a master of trivia. Your task is to write a short, coherent story about {topic}. You must skillfully and accurately weave the answers to the following {n} questions into your story: {questions}.
-
-Make sure the story is engaging and that all the trivia answers are factually correct.
-'''
-
-structured_decomposition_prompt = '''Follow these steps precisely:
-Step 1: First, list the correct answers to the following {n} questions.
-Questions: {questions}
-
-Step 2: Next, create a brief, 3-point outline for a story about {topic} that logically incorporates all the answers from Step 1.
-
-Step 3: Finally, write the full, coherent story based on your outline.
-
-Your output should be of the following format:
+####################### ANSWERING AGENT PROMPTS ##########################
+answer_all_prompt = '''
+Answer the following {n} questions: {questions}
 
 Answers:
-Your answers here.
-
-Outline:
-Your 3 point outline here.
-
-Story:
-Your story here.
+Answers here.
 '''
+######################## END OF ANSWERING AGENT PROMPTS ##########################
 
-double_check_questions_prompt = '''Think carefully about the answers to the following {n} questions: {questions}.
 
-Now go over the answers and double-check their factual correctness.
 
-Once you are confident in the answers, write a short and coherent story about {topic} that seamlessly incorporates these answers.
 
-First Answers:
-Initial answers to the questions here.
-
-Second Answers:
-Second try, double check the answers here.
-
-Story:
-Story here.
-'''
+###################### CHECKING AGENT PROMPTS ##########################
 
 double_check_one_at_a_time_prompt = '''
 Question: {question}
@@ -175,6 +138,97 @@ Please double-check the proposed answer for factual correctness, and write a rev
 Revised answer:
 Revised answer here.
 '''
+
+double_check_all_prompt = '''
+Questions: {questions}
+
+Proposed answers: {proposed_answers}
+
+Please double-check the proposed answers for factual correctness, and write a revised answer if necessary. If a proposed answer is correct, simply repeat it. If it is incorrect, provide the correct answer.
+
+Revised answers:
+Revised answers here.
+'''
+
+
+confidence_assessment_question_prompt = '''
+Question: {question}
+
+Answer:
+Your answer here
+'''
+
+confidence_assessment_assess_prompt = '''
+Question: {question}
+
+Proposed answer: {proposed_answer}
+
+Is the proposed answer:
+    (A) True
+    (B) False
+The proposed answer is: 
+'''
+
+confidence_assessment_write_prompt = ''' 
+Write a short and coherent story about {topic} that incorporates the following {n} points: {answers}
+'''
+
+####################### END OF CHECKING AGENT PROMPTS ##########################
+
+
+# questions_first_prompt = '''Answer the following {n} questions first: {questions}
+
+# Now incorporate them into a short and coherent story about {topic}.
+
+# Answers:
+# Answers to the questions here.
+
+# Story:
+# Story here.
+# '''
+
+# persona_prompt = '''You are an expert storyteller and a master of trivia. Your task is to write a short, coherent story about {topic}. You must skillfully and accurately weave the answers to the following {n} questions into your story: {questions}.
+
+# Make sure the story is engaging and that all the trivia answers are factually correct.
+# '''
+
+# structured_decomposition_prompt = '''Follow these steps precisely:
+# Step 1: First, list the correct answers to the following {n} questions.
+# Questions: {questions}
+
+# Step 2: Next, create a brief, 3-point outline for a story about {topic} that logically incorporates all the answers from Step 1.
+
+# Step 3: Finally, write the full, coherent story based on your outline.
+
+# Your output should be of the following format:
+
+# Answers:
+# Your answers here.
+
+# Outline:
+# Your 3 point outline here.
+
+# Story:
+# Your story here.
+# '''
+
+# double_check_questions_prompt = '''Think carefully about the answers to the following {n} questions: {questions}.
+
+# Now go over the answers and double-check their factual correctness.
+
+# Once you are confident in the answers, write a short and coherent story about {topic} that seamlessly incorporates these answers.
+
+# First Answers:
+# Initial answers to the questions here.
+
+# Second Answers:
+# Second try, double check the answers here.
+
+# Story:
+# Story here.
+# '''
+
+
 
 one_at_a_time_focus_prompt = '''Firstly, think carefully about each of the following {n} questions, focusing on one at a time: {questions}.
 
@@ -207,25 +261,6 @@ Your story here.
 '''
 
 
-confidence_assessment_question_prompt = '''
-Question: {question}
-
-Answer:
-Your answer here
-'''
-
-confidence_assessment_assess_prompt = '''
-Question: {question}
-
-Proposed answer: {proposed_answer}
-
-Is the proposed answer:
-    (A) True
-    (B) False
-The proposed answer is: 
-'''
-
-confidence_assessment_write_prompt = ''' Write a short and coherent story about {topic} that incorporates the following {n} points: {answers}'''
 
 conflict_plan_prompt = '''
 Given a Creative Writing Task, describe the central conflict in detail (more than 5 sentences). The description should answer the following questions:
