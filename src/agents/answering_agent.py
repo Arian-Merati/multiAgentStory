@@ -24,23 +24,23 @@ class AnsweringAgent(BaseAgent):
             random_choice = random.choice(answer_list)
             # Add the chosen answer to our new list
             random_answers.append(random_choice)
-        words_to_include = random_answers.join(", ")
-        scratchpad += f"[Words To Include] {words_to_include}"
+        words_to_include = ", ".join(random_answers)
+        self.scratchpad += f"[Words To Include] {words_to_include}"
         return random_answers
     
-    def answer_all(self, model, processor, task, i, method, scratchpad, prompt=None, test_output=False, **kwargs):
+    def answer_all(self, model, processor, i, method, scratchpad, prompt=None, test_output=False, **kwargs):
         """
         Answer all questions at once
         """
-        qa_prompt = task.get_input_prompt(i, method="answer_all", **kwargs) 
-        question_answer_output = self.process_single_instance(model, processor, task, i, method="answer_all", prompt=qa_prompt, test_output=False, **kwargs)
+        qa_prompt = self.task.get_input_prompt(i, method="answer_all", **kwargs) 
+        question_answer_output = self.process_single_instance(model, processor, self.task, i, method="answer_all", prompt=qa_prompt, test_output=False, **kwargs)
         answers = question_answer_output['unwrapped_text']
         raw_generated_text = question_answer_output['raw_generated_text']
         self.scratchpad += f"[Words To Include] {raw_generated_text}"
         return answers, question_answer_output['evaluation']
        
     
-    def one_at_a_time_answer(self, model, processor, task, i, method, scratchpad, prompt=None, test_output=False, **kwargs):
+    def one_at_a_time_answer(self, model, processor, i, method, scratchpad, prompt=None, test_output=False, **kwargs):
         """
         Answer questions one at a time for the instance at index i.
         """
@@ -49,10 +49,10 @@ class AnsweringAgent(BaseAgent):
         answers = []
         question_prompts, questions = self.task.get_input_prompt(i, method=method, phase="question", **kwargs)
         for question_prompt, question in zip(question_prompts, questions):
-            question_answer_output = self.process_single_instance(model, processor, task, i, method=method, prompt=question_prompt, test_output=False)
+            question_answer_output = self.process_single_instance(model, processor, self.task, i, method=method, prompt=question_prompt, test_output=False)
             answers.append(question_answer_output["unwrapped_text"])
-        words_to_include = answers.join(", ")
-        scratchpad += f"[Words To Include] {words_to_include}"
+        words_to_include = ", ".join(answers)
+        self.scratchpad += f"[Words To Include] {words_to_include}"
         return answers, question_answer_output['evaluation']
 
             

@@ -3,6 +3,7 @@ import time
 import argparse
 import yaml
 import re
+from src.agents import *
 
 # Import the specific components from your other files
 from tasks import trivia_creative_writing
@@ -14,15 +15,16 @@ MODEL_CONFIG = {
 }
 
 AGENT_MAPPING = {
-    "gold_label": AnsweringAgent,
-    "oaat_answer": AnsweringAgent,
-    "confidence_assessment": CheckingAgent,
-    "double_check_all": CheckingAgent,
-    "double_check_oaat": CheckingAgent,
-    "plan_AR": PlanningAgent,
-    "plan_cot": PlanningAgent,
-    "write_AR": WritingAgent,
-    "write_standard": WritingAgent,
+    "answer_all": AnsweringAgent,
+    "answer_one_at_a_time": AnsweringAgent,
+    # "gold_label": AnsweringAgent,
+    # "confidence_assessment": CheckingAgent,
+    # "double_check_all": CheckingAgent,
+    # "double_check_oaat": CheckingAgent,
+    # "plan_AR": PlanningAgent,
+    # "plan_cot": PlanningAgent,
+    # "write_AR": WritingAgent,
+    # "write_standard": WritingAgent,
 }
 
 TASK_FILE = "trivia_creative_writing_100_n_5.jsonl"
@@ -64,7 +66,7 @@ def main():
 
     task = trivia_creative_writing.TriviaCreativeWritingTask(file=TASK_FILE)
     
-    with open(config.yaml, 'r') as f:
+    with open("config.yaml", 'r') as f:
         config = yaml.safe_load(f)
         
     output = {}
@@ -74,18 +76,21 @@ def main():
         results = {}
         for i in range (len(task)):
             scratchpad = ""
+            answers = None
+            evaluation = None
+            
             for agent_name in agent_list:
                 agent_class = AGENT_MAPPING[agent_name]
                 agent = agent_class(model, processor, MODEL_CONFIG["device"], scratchpad=scratchpad)
                 
                 # identifiers = get_identifiers(scratchpad)
                
-                if agent_name == 'gold_label':
-                    answers = agent.gold_label(i, scratchpad)
-                elif agent_name == "answer_all":
-                    answers, evaluation = agent.answer_all(model, processor, task, i, method="answer_all", scratchpad=scratchpad, test_output=True)
-                elif agent_name == 'one_at_a_time_answer':
-                    answers, evaluation = agent.one_at_a_time_answer(model, processor, task, i, method="confidence_assessment", scratchpad=scratchpad, test_output=True)
+                # if agent_name == 'gold_label':
+                #     answers = agent.gold_label(i, scratchpad)
+                if agent_name == "answer_all":
+                    answers, evaluation = agent.answer_all(model, processor, i, method="answer_all", scratchpad=scratchpad, test_output=True)
+                elif agent_name == 'answer_one_at_a_time':
+                    answers, evaluation = agent.one_at_a_time_answer(model, processor, i, method="confidence_assessment", scratchpad=scratchpad, test_output=True)
                 # elif agent_name == "double_check_one_at_a_time":
                 #     revised_answers, answers_str = agent.double_check_one_at_a_time(model, processor, task, i, method="confidence_assessment", proposed_answers_list=answers, scratchpad=scratchpad)
                 # elif agent_name == "double_check_all":
