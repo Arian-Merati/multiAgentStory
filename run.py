@@ -101,7 +101,7 @@ def main():
         correct_count_sum = 0
         question_count_sum = 0
         
-        f1_full_list = [f1 for f1_list in results.values()['evaluation']['f1'] for f1 in f1_list]
+        f1_full_list = [f1_score for result in results.values() for f1_score in result['evaluation']['f1']]
         f1_sum = sum(f1_full_list)
         avg_f1 = f1_sum / len(f1_full_list)
         
