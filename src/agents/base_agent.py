@@ -22,9 +22,11 @@ class BaseAgent:
         self.task = trivia_creative_writing.TriviaCreativeWritingTask(file=TASK_FILE)
         self.scratchpad = scratchpad
         
-    def process_single_instance(self, model, processor, i, method, prompt=None, test_output=True, **kwargs):
+    def process_single_instance(self, model, processor, i, method, **kwargs):
+        test_output = kwargs.get("test_output", True)
+        prompt = kwargs.get("prompt", None)
         if prompt is None:
-            prompt = self.task.get_input_prompt(i, method=method, **kwargs)
+            prompt = self.task.get_input_prompt(i, method, **kwargs)
         raw_generated_text = generate_text_with_gemma(model, processor, prompt, MODEL_CONFIG["device"])
         unwrapped_text, _ = self.task.prompt_unwrap(raw_generated_text, method=method, **kwargs)
         if test_output:

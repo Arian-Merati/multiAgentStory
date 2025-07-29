@@ -1,7 +1,9 @@
 experiments:
 
+  answer_one_at_a_time:
+    - "answer_one_at_a_time"
+    
   answer_all:
     - "answer_all"
 
-  answer_one_at_a_time:
-    - "answer_one_at_a_time"
+  

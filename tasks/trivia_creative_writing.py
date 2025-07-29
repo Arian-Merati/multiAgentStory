@@ -12,6 +12,9 @@ class TriviaCreativeWritingTask(Task):
         path = os.path.join(DATA_PATH, 'trivia_creative_writing', file)
         with open(path, "r") as f:
             self.data = [json.loads(line) for line in f]
+            
+    def __len__(self):
+        return len(self.data)
 
     def get_input(self, idx: int):
         return self.data[idx]
@@ -57,8 +60,8 @@ class TriviaCreativeWritingTask(Task):
         #         input_prompt = self_refine_feedback_prompt.format(question_answer=kwargs["question_answer"])
         #     elif phase == "refine":
         #         input_prompt = self_refine_refinement_prompt.format(question_answer=kwargs["question_answer"], feedback=kwargs["feedback"])
-        elif method == "one_at_a_time_answer":
-            input_prompt = confidence_assessment_question_prompt.format(question=kwargs['question'])
+        # elif method == "one_at_a_time_answer":
+        #     input_prompt = confidence_assessment_question_prompt.format(question=kwargs['question'])
         elif method == "answer_all":
             input_prompt = answer_all_prompt.format(n=n, questions=questions_str)
         elif method == "confidence_assessment":
@@ -77,20 +80,37 @@ class TriviaCreativeWritingTask(Task):
         
         return input_prompt
     
+    @staticmethod
     def f1_score(proposed_answer, gold_answers):
         """
         Calculate F1 score between proposed answer and gold answers.
         """
+        f1 = 0
+        best_f1_precision = 0
+        best_f1_recall = 0
+        
+        print(gold_answers)
+        print(proposed_answer)
+        
         for answer in gold_answers:
             answer_tokens = answer.split()
             proposed_tokens = proposed_answer.split()
             common = collections.Counter(answer_tokens) & collections.Counter(proposed_tokens)
             num_same = sum(common.values())
-            precision = 1.0 * len(num_same) / len(proposed_tokens)
-            recall = 1.0 * len(num_same) / len(answer_tokens)
-            f1 = (2 * precision * recall) / (precision + recall)
+            print(num_same)
+            precision = 1.0 * num_same / len(proposed_tokens)
+            recall = 1.0 * num_same / len(answer_tokens)
+            if precision + recall == 0:
+                f1_temp = 0
+            else:
+                f1_temp = (2 * precision * recall) / (precision + recall)
             
-        return precision, recall, f1
+            if f1_temp > f1:
+                f1 = f1_temp
+                best_f1_precision = precision
+                best_f1_recall = recall
+            
+        return best_f1_precision, best_f1_recall, f1
         
 
     def test_output(self, idx, output):
@@ -98,17 +118,20 @@ class TriviaCreativeWritingTask(Task):
         instance = self.data[idx]
         correct_count = 0
         question_count = len(instance["answers"])
+        f1_list = []
+        
+        # ans_to_questions is a list of lists containing all the answers to the questions at index i
         for ans_to_question in instance["answers"]:
+            precision, recall, f1 = self.f1_score(output, ans_to_question)
+            f1_list.append(f1)
             for ans in ans_to_question:
-                precision, recall, f1 = self.f1_score(output, ans)
                 # compare all to lower
                 if ans.lower() in output.lower():
                     correct_count += 1
                     break
                 
         info = {'correct_count': correct_count, 'question_count': question_count, 
-                'accuracy': correct_count / question_count, 'precision': precision, 
-                'recall': recall, 'f1': f1}
+                'accuracy': correct_count / question_count, 'f1': f1_list}
         
         return info
 
@@ -232,7 +255,7 @@ class TriviaCreativeWritingTask(Task):
                 if "Falling action:" in response:
                     return response.split("Falling action:")[1].strip(), True
                 elif "falling action:" in response:
-                    return response.split("falling actions:")[1].strip(), True
+                    return response.split("falling action:")[1].strip(), True
                 else:
                     return response, False
             elif phase == "resolution":

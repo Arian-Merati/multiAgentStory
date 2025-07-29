@@ -32,6 +32,7 @@ def load_gemma_model(model_id, device):
 
 
 def generate_text_with_gemma(model, processor, prompt, device):
+    print(f"Generating text with prompt: {prompt}")
     messages = [
     {
         "role": "system",

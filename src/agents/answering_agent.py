@@ -1,12 +1,6 @@
-import json
-import time
-import argparse
 import random
 
-# Import the specific components from your other files
-from tasks import trivia_creative_writing
-from models import load_gemma_model, generate_text_with_gemma, get_probability_of_true
-from base_agent import BaseAgent
+from .base_agent import BaseAgent
 
 class AnsweringAgent(BaseAgent):
     def __init__(self, model, processor, device, scratchpad=""):
@@ -28,28 +22,30 @@ class AnsweringAgent(BaseAgent):
         self.scratchpad += f"[Words To Include] {words_to_include}"
         return random_answers
     
-    def answer_all(self, model, processor, i, method, scratchpad, prompt=None, test_output=False, **kwargs):
+    def answer_all(self, model, processor, i, method, scratchpad, **kwargs):
         """
         Answer all questions at once
         """
-        qa_prompt = self.task.get_input_prompt(i, method="answer_all", **kwargs) 
-        question_answer_output = self.process_single_instance(model, processor, self.task, i, method="answer_all", prompt=qa_prompt, test_output=False, **kwargs)
+        self.scratchpad = scratchpad
+        qa_prompt = self.task.get_input_prompt(i, method, **kwargs) 
+        question_answer_output = self.process_single_instance(model, processor, i, method, prompt=qa_prompt, test_output=True, **kwargs)
         answers = question_answer_output['unwrapped_text']
         raw_generated_text = question_answer_output['raw_generated_text']
         self.scratchpad += f"[Words To Include] {raw_generated_text}"
         return answers, question_answer_output['evaluation']
        
-    
-    def one_at_a_time_answer(self, model, processor, i, method, scratchpad, prompt=None, test_output=False, **kwargs):
+    def one_at_a_time_answer(self, model, processor, i, method, scratchpad, **kwargs):
         """
         Answer questions one at a time for the instance at index i.
         """
         print("\tidx:", i, "answering one at a time...")
         self.scratchpad = scratchpad
         answers = []
-        question_prompts, questions = self.task.get_input_prompt(i, method=method, phase="question", **kwargs)
-        for question_prompt, question in zip(question_prompts, questions):
-            question_answer_output = self.process_single_instance(model, processor, self.task, i, method=method, prompt=question_prompt, test_output=False)
+        question_prompts, questions = self.task.get_input_prompt(i, method, phase="question", **kwargs)
+        # for question_prompt, question in zip(question_prompts, questions):
+        for prompt in question_prompts:
+            # question_answer_output = self.process_single_instance(model, processor, i, method, prompt=question_prompt, test_output=True, phase="question", **kwargs)
+            question_answer_output = self.process_single_instance(model, processor, i, method, prompt=prompt, test_output=True, phase="question", **kwargs)
             answers.append(question_answer_output["unwrapped_text"])
         words_to_include = ", ".join(answers)
         self.scratchpad += f"[Words To Include] {words_to_include}"
