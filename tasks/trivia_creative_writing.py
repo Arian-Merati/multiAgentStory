@@ -120,7 +120,7 @@ class TriviaCreativeWritingTask(Task):
         question_count = len(instance["answers"])
         f1_list = []
         
-        # ans_to_questions is a list of lists containing all the answers to the questions at index i
+        # instance["answers"] is a list of lists containing all the answers to the questions at index i
         for ans_to_question in instance["answers"]:
             precision, recall, f1 = self.f1_score(output, ans_to_question)
             f1_list.append(f1)

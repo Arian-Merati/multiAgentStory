@@ -26,10 +26,15 @@ class AnsweringAgent(BaseAgent):
         """
         Answer all questions at once
         """
+        answers = {}
         self.scratchpad = scratchpad
         qa_prompt = self.task.get_input_prompt(i, method, **kwargs) 
         question_answer_output = self.process_single_instance(model, processor, i, method, prompt=qa_prompt, test_output=True, **kwargs)
-        answers = question_answer_output['unwrapped_text']
+        # answers = question_answer_output['unwrapped_text']
+        answers["output"] = {
+            "prompt": qa_prompt,
+            "answer": question_answer_output["unwrapped_text"]
+        }
         raw_generated_text = question_answer_output['raw_generated_text']
         self.scratchpad += f"[Words To Include] {raw_generated_text}"
         return answers, question_answer_output['evaluation']
@@ -40,13 +45,19 @@ class AnsweringAgent(BaseAgent):
         """
         print("\tidx:", i, "answering one at a time...")
         self.scratchpad = scratchpad
-        answers = []
+        answers = {}
         question_prompts, questions = self.task.get_input_prompt(i, method, phase="question", **kwargs)
         # for question_prompt, question in zip(question_prompts, questions):
+        i = 0
         for prompt in question_prompts:
             # question_answer_output = self.process_single_instance(model, processor, i, method, prompt=question_prompt, test_output=True, phase="question", **kwargs)
             question_answer_output = self.process_single_instance(model, processor, i, method, prompt=prompt, test_output=True, phase="question", **kwargs)
-            answers.append(question_answer_output["unwrapped_text"])
+            # answers.append(question_answer_output["unwrapped_text"])
+            answers[f"{i}"] = {
+                "prompt": prompt,
+                "answer": question_answer_output["unwrapped_text"]
+            }
+            i += 1
         words_to_include = ", ".join(answers)
         self.scratchpad += f"[Words To Include] {words_to_include}"
         return answers, question_answer_output['evaluation']

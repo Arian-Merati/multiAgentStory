@@ -2,15 +2,16 @@ import json
 import yaml
 import re
 from src.agents import *
+import argparse
 
 # Import the specific components from your other files
 from tasks import trivia_creative_writing
 from models import load_gemma_model, generate_text_with_gemma, get_probability_of_true
 
-MODEL_CONFIG = {
-    "model_id": "google/gemma-3-4b-it",
-    "device": "mps",
-}
+# MODEL_CONFIG = {
+#     "model_id": "google/gemma-3-4b-it",
+#     "device": "mps",
+# }
 
 AGENT_MAPPING = {
     "answer_all": AnsweringAgent,
@@ -47,10 +48,16 @@ def get_identifiers(scratchpad):
     
 
 def main():
+    
+    parser = argparse.ArgumentParser(description="Run multi-agent experiments with Gemma.")
+    parser.add_argument("--model_path", type=str, required=True, help="Path to the model directory.")
+    parser.add_argument("--device", type=str, default="cuda", help="Device to run the model on (e.g., 'cuda' or 'cpu').")
+    parser.add_argument("--output_dir", type=str, default=".", help="Directory to save the output files.")
+    args = parser.parse_args()
 
     model, processor = load_gemma_model(
-        model_id=MODEL_CONFIG["model_id"],
-        device=MODEL_CONFIG["device"],
+        model_id=args.model_path,
+        device=args.device,
     )
 
     task = trivia_creative_writing.TriviaCreativeWritingTask(file=TASK_FILE)
@@ -70,7 +77,7 @@ def main():
             
             for agent_name in agent_list:
                 agent_class = AGENT_MAPPING[agent_name]
-                agent = agent_class(model, processor, MODEL_CONFIG["device"], scratchpad=scratchpad)
+                agent = agent_class(model, processor, args.device, scratchpad=scratchpad)
                 
                 # identifiers = get_identifiers(scratchpad)
                
@@ -116,10 +123,11 @@ def main():
         
         output[experiment_name] = {
             "f1": avg_f1,
-            "accuracy": avg_accuracy
+            "accuracy": avg_accuracy,
+            "results": results
         }
         
-        output_file = f"gemma_trivia_results__{experiment_name}.jsonl"
+        output_file = f"{args.output_dir}/gemma_trivia_results__{experiment_name}.jsonl"
         save_progress(output, output_file)
         
 if __name__ == "__main__":
