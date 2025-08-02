@@ -126,12 +126,14 @@ class TriviaCreativeWritingTask(Task):
             f1_list.append(f1)
             for ans in ans_to_question:
                 # compare all to lower
+                print(f"ground truth answer: {ans.lower()}")
+                print(f"output: {output.lower()}")
                 if ans.lower() in output.lower():
                     correct_count += 1
                     break
                 
         info = {'correct_count': correct_count, 'question_count': question_count, 
-                'accuracy': correct_count / question_count, 'f1': f1_list}
+                'accuracy': correct_count / question_count, 'f1': f1_list, 'ground_truth': instance["answers"]}
         
         return info
 

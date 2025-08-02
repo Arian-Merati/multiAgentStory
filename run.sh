@@ -12,7 +12,7 @@ echo "Running pipeline with cluster's Gemma 27B..."
 # Execute the python script with the new arguments
 # The paths /models/gemma-27b and /results come from your job.yaml file
 python run.py \
-    --model_path "/nfs/public/hf/models/google/gemma-3-4b-it" \
+    --model_path "/models" \
     --device "cuda" \
     --output_dir "/results"
 

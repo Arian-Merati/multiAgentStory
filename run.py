@@ -71,6 +71,8 @@ def main():
         print(f"Running experiment: {experiment_name}")
         results = {}
         for i in range (len(task)):
+            if i != 55:
+                continue
             scratchpad = ""
             answers = None
             evaluation = None
@@ -101,7 +103,7 @@ def main():
                 
             results[i] = {
                 "evaluation": evaluation,
-                "answers": answers
+                "outputs": answers
             }
    
         f1_sum = 0
@@ -127,7 +129,7 @@ def main():
             "results": results
         }
         
-        output_file = f"{args.output_dir}/gemma_trivia_results__{experiment_name}.jsonl"
+        output_file = f"{args.output_dir}/TEST_{experiment_name}.jsonl"
         save_progress(output, output_file)
         
 if __name__ == "__main__":

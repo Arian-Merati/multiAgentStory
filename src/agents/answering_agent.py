@@ -33,7 +33,8 @@ class AnsweringAgent(BaseAgent):
         # answers = question_answer_output['unwrapped_text']
         answers["output"] = {
             "prompt": qa_prompt,
-            "answer": question_answer_output["unwrapped_text"]
+            "answer": question_answer_output["unwrapped_text"],
+            "ground_truth": question_answer_output['evaluation']['ground_truth']
         }
         raw_generated_text = question_answer_output['raw_generated_text']
         self.scratchpad += f"[Words To Include] {raw_generated_text}"
@@ -48,16 +49,17 @@ class AnsweringAgent(BaseAgent):
         answers = {}
         question_prompts, questions = self.task.get_input_prompt(i, method, phase="question", **kwargs)
         # for question_prompt, question in zip(question_prompts, questions):
-        i = 0
+        j = 0
         for prompt in question_prompts:
             # question_answer_output = self.process_single_instance(model, processor, i, method, prompt=question_prompt, test_output=True, phase="question", **kwargs)
             question_answer_output = self.process_single_instance(model, processor, i, method, prompt=prompt, test_output=True, phase="question", **kwargs)
             # answers.append(question_answer_output["unwrapped_text"])
-            answers[f"{i}"] = {
+            answers[f"{j}"] = {
                 "prompt": prompt,
-                "answer": question_answer_output["unwrapped_text"]
+                "answer": question_answer_output["unwrapped_text"],
+                "ground_truth": question_answer_output['evaluation']['ground_truth']
             }
-            i += 1
+            j += 1
         words_to_include = ", ".join(answers)
         self.scratchpad += f"[Words To Include] {words_to_include}"
         return answers, question_answer_output['evaluation']
