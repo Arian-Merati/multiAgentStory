@@ -1,7 +1,12 @@
 experiments:
 
-  answer_one_at_a_time:
+  double_check:
     - "answer_one_at_a_time"
+    - "double_check"
+
+  # confidence_assessment:
+  #   - "answer_one_at_a_time"
+  #   - "confidence_assessment"
     
   # answer_all:
   #   - "answer_all"

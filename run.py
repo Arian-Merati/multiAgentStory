@@ -3,6 +3,7 @@ import yaml
 import re
 from src.agents import *
 import argparse
+import torch
 
 # Import the specific components from your other files
 from tasks import trivia_creative_writing
@@ -16,6 +17,8 @@ from models import load_gemma_model, generate_text_with_gemma, get_probability_o
 AGENT_MAPPING = {
     "answer_all": AnsweringAgent,
     "answer_one_at_a_time": AnsweringAgent,
+    "double_check": CheckingAgent,
+    "confidence_assessment": CheckingAgent
     # "gold_label": AnsweringAgent,
     # "confidence_assessment": CheckingAgent,
     # "double_check_all": CheckingAgent,
@@ -59,6 +62,10 @@ def main():
         model_id=args.model_path,
         device=args.device,
     )
+    
+    print("Compiling model...")
+    model = torch.compile(model)
+    print("Model compiled successfully.")
 
     task = trivia_creative_writing.TriviaCreativeWritingTask(file=TASK_FILE)
     
@@ -75,11 +82,12 @@ def main():
                 continue
             scratchpad = ""
             answers = None
+            checked_answers = None
             evaluation = None
             
             for agent_name in agent_list:
                 agent_class = AGENT_MAPPING[agent_name]
-                agent = agent_class(model, processor, args.device, scratchpad=scratchpad)
+                agent = agent_class(model, processor, task, args.device, scratchpad=scratchpad)
                 
                 # identifiers = get_identifiers(scratchpad)
                
@@ -88,7 +96,12 @@ def main():
                 if agent_name == "answer_all":
                     answers, evaluation = agent.answer_all(model, processor, i, method="answer_all", scratchpad=scratchpad)
                 elif agent_name == 'answer_one_at_a_time':
-                    answers, evaluation = agent.one_at_a_time_answer(model, processor, i, method="confidence_assessment", scratchpad=scratchpad)
+                    output, answers_list, evaluation = agent.one_at_a_time_answer(model, processor, i, method="confidence_assessment", scratchpad=scratchpad)
+                elif agent_name == "double_check":
+                    print(f"answers: {answers}")
+                    checked_answers, evaluation = agent.double_check(model, processor, i, method="double_check", scratchpad=scratchpad, proposed_answers_list=answers_list)
+                elif agent_name == "confidence_assessment":
+                    checked_answers, evaluation = agent.confidence_assessment(model, processor, i, method="confidence_assessment", scratchpad=scratchpad)
                 # elif agent_name == "double_check_one_at_a_time":
                 #     revised_answers, answers_str = agent.double_check_one_at_a_time(model, processor, task, i, method="confidence_assessment", proposed_answers_list=answers, scratchpad=scratchpad)
                 # elif agent_name == "double_check_all":
@@ -103,7 +116,8 @@ def main():
                 
             results[i] = {
                 "evaluation": evaluation,
-                "outputs": answers
+                "outputs": answers,
+                "checked_answers": checked_answers
             }
    
         f1_sum = 0

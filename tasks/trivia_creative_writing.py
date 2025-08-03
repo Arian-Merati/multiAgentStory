@@ -46,7 +46,7 @@ class TriviaCreativeWritingTask(Task):
         #     input_prompt = structured_decomposition_prompt.format(n=n, questions=questions_str, topic=topic)
         elif method == "double_check_all":
             input_prompt = double_check_all_prompt.format(n=n, questions=questions_str, topic=topic)
-        elif method == "double_check_one_at_a_time":
+        elif method == "double_check":
             input_prompt = double_check_one_at_a_time_prompt.format(question=kwargs['question'], proposed_answer=kwargs['proposed_answer'])
         # elif method == "one_at_a_time_focus":
         #     input_prompt = one_at_a_time_focus_prompt.format(n=n, questions=questions_str, topic=topic)
@@ -89,15 +89,15 @@ class TriviaCreativeWritingTask(Task):
         best_f1_precision = 0
         best_f1_recall = 0
         
-        print(gold_answers)
-        print(proposed_answer)
+        # print(gold_answers)
+        # print(proposed_answer)
         
         for answer in gold_answers:
             answer_tokens = answer.split()
             proposed_tokens = proposed_answer.split()
             common = collections.Counter(answer_tokens) & collections.Counter(proposed_tokens)
             num_same = sum(common.values())
-            print(num_same)
+            #print(num_same)
             precision = 1.0 * num_same / len(proposed_tokens)
             recall = 1.0 * num_same / len(answer_tokens)
             if precision + recall == 0:
@@ -126,8 +126,8 @@ class TriviaCreativeWritingTask(Task):
             f1_list.append(f1)
             for ans in ans_to_question:
                 # compare all to lower
-                print(f"ground truth answer: {ans.lower()}")
-                print(f"output: {output.lower()}")
+                # print(f"ground truth answer: {ans.lower()}")
+                # print(f"output: {output.lower()}")
                 if ans.lower() in output.lower():
                     correct_count += 1
                     break
@@ -164,7 +164,7 @@ class TriviaCreativeWritingTask(Task):
             else:
                 return response, False 
             
-        elif method == "double_check_one_at_a_time":
+        elif method == "double_check":
             if "Revised answer:" in response:
                 return response.split("Revised answer:")[1].strip(), True
             elif "revised answer:" in response:

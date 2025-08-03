@@ -15,11 +15,11 @@ TASK_FILE = "trivia_creative_writing_100_n_5.jsonl"
 # SYSTEM_PROMPT = "You are an AI assistant that helps people find information."
 
 class BaseAgent:
-    def __init__(self, model, processor, device, scratchpad=""):
+    def __init__(self, model, processor, task, device, scratchpad=""):
         self.model = model
         self.processor = processor
         self.device = device
-        self.task = trivia_creative_writing.TriviaCreativeWritingTask(file=TASK_FILE)
+        self.task = task
         self.scratchpad = scratchpad
         
     def process_single_instance(self, model, processor, i, method, **kwargs):

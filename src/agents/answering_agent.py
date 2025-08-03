@@ -3,8 +3,8 @@ import random
 from .base_agent import BaseAgent
 
 class AnsweringAgent(BaseAgent):
-    def __init__(self, model, processor, device, scratchpad=""):
-        super().__init__(model, processor, device, scratchpad="")
+    def __init__(self, model, processor, task, device, scratchpad):
+        super().__init__(model, processor, task, device, scratchpad)
         
     def gold_label(self, i, scratchpad):
         """
@@ -26,19 +26,19 @@ class AnsweringAgent(BaseAgent):
         """
         Answer all questions at once
         """
-        answers = {}
+        output = {}
         self.scratchpad = scratchpad
         qa_prompt = self.task.get_input_prompt(i, method, **kwargs) 
         question_answer_output = self.process_single_instance(model, processor, i, method, prompt=qa_prompt, test_output=True, **kwargs)
         # answers = question_answer_output['unwrapped_text']
-        answers["output"] = {
+        output["output"] = {
             "prompt": qa_prompt,
-            "answer": question_answer_output["unwrapped_text"],
+            "answers": question_answer_output["unwrapped_text"],
             "ground_truth": question_answer_output['evaluation']['ground_truth']
         }
         raw_generated_text = question_answer_output['raw_generated_text']
         self.scratchpad += f"[Words To Include] {raw_generated_text}"
-        return answers, question_answer_output['evaluation']
+        return output, question_answer_output['evaluation']
        
     def one_at_a_time_answer(self, model, processor, i, method, scratchpad, **kwargs):
         """
@@ -46,7 +46,8 @@ class AnsweringAgent(BaseAgent):
         """
         print("\tidx:", i, "answering one at a time...")
         self.scratchpad = scratchpad
-        answers = {}
+        output = {}
+        answers = []
         question_prompts, questions = self.task.get_input_prompt(i, method, phase="question", **kwargs)
         # for question_prompt, question in zip(question_prompts, questions):
         j = 0
@@ -54,15 +55,16 @@ class AnsweringAgent(BaseAgent):
             # question_answer_output = self.process_single_instance(model, processor, i, method, prompt=question_prompt, test_output=True, phase="question", **kwargs)
             question_answer_output = self.process_single_instance(model, processor, i, method, prompt=prompt, test_output=True, phase="question", **kwargs)
             # answers.append(question_answer_output["unwrapped_text"])
-            answers[f"{j}"] = {
+            output[f"{j}"] = {
                 "prompt": prompt,
-                "answer": question_answer_output["unwrapped_text"],
+                "answers": question_answer_output["unwrapped_text"],
                 "ground_truth": question_answer_output['evaluation']['ground_truth']
             }
             j += 1
-        words_to_include = ", ".join(answers)
+            answers.append(question_answer_output["unwrapped_text"])
+        words_to_include = ", ".join(output)
         self.scratchpad += f"[Words To Include] {words_to_include}"
-        return answers, question_answer_output['evaluation']
+        return output, answers, question_answer_output['evaluation']
 
             
         
