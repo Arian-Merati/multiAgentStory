@@ -18,15 +18,15 @@ AGENT_MAPPING = {
     "answer_all": AnsweringAgent,
     "answer_one_at_a_time": AnsweringAgent,
     "double_check": CheckingAgent,
-    "confidence_assessment": CheckingAgent
-    # "gold_label": AnsweringAgent,
+    "confidence_assessment": CheckingAgent,
+    "gold_label": AnsweringAgent,
     # "confidence_assessment": CheckingAgent,
     # "double_check_all": CheckingAgent,
     # "double_check_oaat": CheckingAgent,
-    # "plan_AR": PlanningAgent,
+    "plan_AR": PlanningAgent,
     # "plan_cot": PlanningAgent,
-    # "write_AR": WritingAgent,
-    # "write_standard": WritingAgent,
+    "write_AR": WritingAgent,
+    "write_standard": WritingAgent,
 }
 
 TASK_FILE = "trivia_creative_writing_100_n_5.jsonl"
@@ -63,9 +63,9 @@ def main():
         device=args.device,
     )
     
-    print("Compiling model...")
-    model = torch.compile(model)
-    print("Model compiled successfully.")
+    # print("Compiling model...")
+    # model = torch.compile(model)
+    # print("Model compiled successfully.")
 
     task = trivia_creative_writing.TriviaCreativeWritingTask(file=TASK_FILE)
     
@@ -78,12 +78,10 @@ def main():
         print(f"Running experiment: {experiment_name}")
         results = {}
         for i in range (len(task)):
-            if i != 55:
+            if i not in [55, 56]:
                 continue
             scratchpad = ""
-            answers = None
             checked_answers = None
-            evaluation = None
             
             for agent_name in agent_list:
                 agent_class = AGENT_MAPPING[agent_name]
@@ -94,14 +92,16 @@ def main():
                 # if agent_name == 'gold_label':
                 #     answers = agent.gold_label(i, scratchpad)
                 if agent_name == "answer_all":
-                    answers, evaluation = agent.answer_all(model, processor, i, method="answer_all", scratchpad=scratchpad)
+                    question_answers = agent.answer_all(model, processor, i, method="answer_all", scratchpad=scratchpad)
                 elif agent_name == 'answer_one_at_a_time':
-                    output, answers_list, evaluation = agent.one_at_a_time_answer(model, processor, i, method="confidence_assessment", scratchpad=scratchpad)
+                    question_answers, answers_list = agent.one_at_a_time_answer(model, processor, i, method="confidence_assessment", scratchpad=scratchpad)
                 elif agent_name == "double_check":
-                    print(f"answers: {answers}")
-                    checked_answers, evaluation = agent.double_check(model, processor, i, method="double_check", scratchpad=scratchpad, proposed_answers_list=answers_list)
+                    #print(f"answers: {answers}")
+                    question_answers = agent.double_check(model, processor, i, method="double_check", scratchpad=scratchpad, proposed_answers_list=answers_list)
                 elif agent_name == "confidence_assessment":
-                    checked_answers, evaluation = agent.confidence_assessment(model, processor, i, method="confidence_assessment", scratchpad=scratchpad)
+                    question_answers = agent.confidence_assessment(model, processor, i, method="confidence_assessment", scratchpad=scratchpad)
+                elif agent_name == "gold_label":
+                    random_question_answers = agent.gold_label(i, scratchpad)
                 # elif agent_name == "double_check_one_at_a_time":
                 #     revised_answers, answers_str = agent.double_check_one_at_a_time(model, processor, task, i, method="confidence_assessment", proposed_answers_list=answers, scratchpad=scratchpad)
                 # elif agent_name == "double_check_all":
@@ -109,42 +109,59 @@ def main():
                 # elif agent_name == "confidence_assessment":
                 #     log_outputs = agent.confidence_assessment(model, processor, task, i, method="confidence_assessment", scratchpad=scratchpad)
                 #     answers = log_outputs["answers"]
-                # elif agent_name == "plan_ar":
-                #     agent.plan_ar(i, scratchpad=scratchpad, identifiers=identifiers)
+                elif agent_name == "plan_ar":
+                    agent.plan_ar(i, scratchpad=scratchpad)
+                elif agent_name == "write_ar":
+                    agent.write_ar(i, scratchpad)
+                # elif agent_name == "write_standard":
+                #     agent_
                 # elif agent_name == "plan_standard":
                 #     agent
                 
             results[i] = {
-                "evaluation": evaluation,
-                "outputs": answers,
-                "checked_answers": checked_answers
+                "question_answers": question_answers,
+                # "checked_question_answers": checked_answers
             }
+        
+        #print(results)
    
-        f1_sum = 0
+        # f1_sum = 0
         correct_count_sum = 0
         question_count_sum = 0
         
-        f1_full_list = [f1_score for result in results.values() for f1_score in result['evaluation']['f1']]
-        f1_sum = sum(f1_full_list)
-        avg_f1 = f1_sum / len(f1_full_list)
+        # f1_full_list = [f1_score for result in results.values() for f1_score in result['evaluation']['f1']]
+        # f1_sum = sum(f1_full_list)
+        # avg_f1 = f1_sum / len(f1_full_list)
+            
         
-        for i, result in results.items():
-            correct_count_sum += result['evaluation']['correct_count']
-            question_count_sum += result['evaluation']['question_count']
+        if experiment_name in ["one_at_a_time", "double_check"]:
+            print(results)
+            question_count_sum = len(task) * results[55]["question_answers"]["0"]['evaluation']['question_count']
+            for i, entry in results.items():
+                for i, question in entry['question_answers'].items():
+                    correct_count_sum += question['evaluation']['correct_count']
+                    
+        else:
+            for i, entry in results.items():
+                correct_count_sum += entry['question_answers']['evaluation']['correct_count']
+                question_count_sum += entry['question_answers']['evaluation']['question_count']
+                
+        print(f"{experiment_name} had correct_count_sum: {correct_count_sum} and question_count_sum: {question_count_sum}")
 
         avg_accuracy = correct_count_sum / question_count_sum
+    
         
-        print(f"Average F1 score for {experiment_name}: {avg_f1:.2f}")
+        # print(f"Average F1 score for {experiment_name}: {avg_f1:.2f}")
         print(f"Average accuracy for {experiment_name}: {avg_accuracy:.2f}")
         
         output[experiment_name] = {
-            "f1": avg_f1,
+            # "f1": avg_f1,
             "accuracy": avg_accuracy,
             "results": results
         }
         
-        output_file = f"{args.output_dir}/TEST_{experiment_name}.jsonl"
-        save_progress(output, output_file)
+    output_file = f"{args.output_dir}/FINAL_TEST.jsonl"
+    save_progress(output, output_file)
         
 if __name__ == "__main__":
     main()

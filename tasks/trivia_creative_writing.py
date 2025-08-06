@@ -128,14 +128,24 @@ class TriviaCreativeWritingTask(Task):
                 # compare all to lower
                 # print(f"ground truth answer: {ans.lower()}")
                 # print(f"output: {output.lower()}")
-                if ans.lower() in output.lower():
-                    correct_count += 1
-                    break
+                pattern = r'\b' + re.escape(str(ans).lower()) + r'\b'
                 
-        info = {'correct_count': correct_count, 'question_count': question_count, 
-                'accuracy': correct_count / question_count, 'f1': f1_list, 'ground_truth': instance["answers"]}
+                if re.search(pattern, output.lower()):
+                    print(f"MATCH: Found answer '{ans}' in output.")
+                    correct_count += 1
+                    break 
+                
+                # if ans.lower() in output.lower():
+                #     print("MATCH")
+                #     correct_count += 1
+                #     break
         
-        return info
+        info = {'correct_count': correct_count, 'question_count': question_count, 
+                'accuracy': correct_count / question_count, 'f1': f1_list}
+        
+        # print(info)
+        
+        return info, instance["answers"]
 
     @staticmethod
     def prompt_unwrap(response: str, method: str, **kwargs):

@@ -3,8 +3,8 @@ from prompts import *
 
 
 class PlanningAgent(BaseAgent):
-    def __init__(self, model, processor, device, scratchpad=""):
-        super().__init__(model, processor, device, scratchpad="")
+    def __init__(self, model, processor, device, scratchpad):
+        super().__init__(model, processor, device, scratchpad)
         
 
     def plan_ar(self, i, scratchpad):

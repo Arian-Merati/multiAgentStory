@@ -350,6 +350,10 @@ Match the writing style, vocabulary, and overall mood of the existing text. Do n
 Resolution:
 '''
 
+write_standard = '''
+Write a short and coherent story about {topic} that incorporates the following following words: {scratchpad}
+'''
+
 
 
 

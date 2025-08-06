@@ -12,11 +12,18 @@ class WritingAgent(BaseAgent):
     A self-contained agent that takes a completed plan and writes a full story,
     section by section, following a narrative arc.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, model, processor, task, device, scratchpad):
         """Initializes the WritingAgent by inheriting from BaseAgent."""
-        super().__init__(*args, **kwargs)
+        super().__init__(model, processor, task, device, scratchpad)
+        
+    def write_standard(self, idx):
+        prompt = falling_action_writing_prompt.format(section="Falling Action", scratchpad=self.scratchpad)
+        return self.process_single_instance(
+            i=idx, method="write", prompt=prompt, test_output=False, phase="falling_action"
+        )
+        
 
-    def write_story(self, idx):
+    def write_ar(self, idx):
         """
         Takes a plan scratchpad and writes a full story by sequentially writing
         """

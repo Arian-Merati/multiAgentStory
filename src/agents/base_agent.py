@@ -23,14 +23,15 @@ class BaseAgent:
         self.scratchpad = scratchpad
         
     def process_single_instance(self, model, processor, i, method, **kwargs):
+        ground_truth = None
         test_output = kwargs.get("test_output", True)
         prompt = kwargs.get("prompt", None)
         if prompt is None:
             prompt = self.task.get_input_prompt(i, method, **kwargs)
-        raw_generated_text = generate_text_with_gemma(model, processor, prompt, MODEL_CONFIG["device"])
+        raw_generated_text = generate_text_with_gemma(model, processor, prompt, self.device)
         unwrapped_text, _ = self.task.prompt_unwrap(raw_generated_text, method=method, **kwargs)
         if test_output:
-            eval_info = self.task.test_output(i, unwrapped_text)
+            eval_info, ground_truth = self.task.test_output(i, unwrapped_text)
         else:
             eval_info = []
         
@@ -41,4 +42,5 @@ class BaseAgent:
             "unwrapped_text": unwrapped_text,
             "raw_generated_text": raw_generated_text,
             "prompt": prompt,
+            "ground_truth": ground_truth
         }

@@ -42,7 +42,7 @@ class CheckingAgent(BaseAgent):
         for question_prompt, question in zip(question_prompts, questions):
             confidence = 0
             assessment_prompts = []
-            while confidence <= 0.5:
+            while confidence <= 0.9:
                 question_output = self.process_single_instance(model, processor, i, method, prompt=question_prompt, test_output=False, phase="question")
                 assessment_prompt = self.task.get_input_prompt(i, method=method, phase="assess", question=question, proposed_answer=question_output["unwrapped_text"])
                 assessment_prompts.append(assessment_prompt)
@@ -74,24 +74,24 @@ class CheckingAgent(BaseAgent):
         question_prompts, questions_list = self.task.get_input_prompt(i, method="confidence_assessment", phase="question", **kwargs)
         revised_answers = []
         output = {}
-        output[f"{i}"] = {}
         for j, (question, proposed_answer) in enumerate(zip(questions_list, proposed_answers_list)):
             print(f"proposed_answer: {proposed_answer}")
             print(f"quesiton: {question}")
             checking_prompt = self.task.get_input_prompt(i, method=method, question=question, proposed_answer=proposed_answer)
             print(f"checking prompt: {checking_prompt}")
             double_check_output = self.process_single_instance(model, processor, i, method, prompt=checking_prompt, **kwargs)
-            output[f"{i}"][f"{j}"] = {
+            output[f"{j}"] = {
                 "prompt": checking_prompt,
                 "answer": double_check_output["unwrapped_text"],
                 "raw_generated_text": double_check_output['raw_generated_text'],
-                "ground_truth": double_check_output['evaluation']['ground_truth']
+                "ground_truth": double_check_output['ground_truth'],
+                "evaluation": double_check_output['evaluation']
             }
             revised_answers.append(double_check_output["unwrapped_text"])
         answers_str = " ".join(revised_answers)
         self.scratchpad = f"[Words To Include] {answers_str}"
            
-        return output, double_check_output['evaluation']
+        return output
     
     
     
