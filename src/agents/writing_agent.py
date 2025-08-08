@@ -16,14 +16,14 @@ class WritingAgent(BaseAgent):
         """Initializes the WritingAgent by inheriting from BaseAgent."""
         super().__init__(model, processor, task, device, scratchpad)
         
-    def write_standard(self, idx):
-        prompt = falling_action_writing_prompt.format(section="Falling Action", scratchpad=self.scratchpad)
+    def write_standard(self, idx, scratchpad):
+        prompt = self.task.get_input_prompt(idx, scratchpad, method="write_standard")
         return self.process_single_instance(
-            i=idx, method="write", prompt=prompt, test_output=False, phase="falling_action"
+            model=self.model, processor=self.processor, i=idx, method="write_standard", prompt=prompt, test_output=True
         )
         
 
-    def write_ar(self, idx):
+    def write_ar(self, idx, scratchpad):
         """
         Takes a plan scratchpad and writes a full story by sequentially writing
         """
@@ -31,6 +31,8 @@ class WritingAgent(BaseAgent):
 
         # The scratchpad starts with the full plan from the PlanningAgent.
         final_story = []
+        
+        self.scratchpad = scratchpad
 
         # --- Step 1: Write Exposition ---
         print("  - Writing [Exposition]...")
@@ -74,31 +76,36 @@ class WritingAgent(BaseAgent):
     # --- Private methods for each writing step ---
 
     def _write_exposition(self, idx):
-        prompt = exposition_writing_prompt.format(section="Exposition", scratchpad=self.scratchpad)
+        identifiers = self.get_identifiers(self.scratchpad)
+        prompt = exposition_writing_prompt.format(identifiers=identifiers, section="Exposition", scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="write", prompt=prompt, test_output=False, phase="exposition"
+            model=self.model, processor=self.processor, i=idx, method="write_ar", prompt=prompt, test_output=False, phase="exposition"
         )
 
     def _write_rising_action(self, idx):
-        prompt = rising_action_writing_prompt.format(section="Rising Action", scratchpad=self.scratchpad)
+        identifiers = self.get_identifiers(self.scratchpad)
+        prompt = rising_action_writing_prompt.format(identifiers=identifiers, section="Rising Action", scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="write", prompt=prompt, test_output=False, phase="rising_action"
+            model=self.model, processor=self.processor, i=idx, method="write_ar", prompt=prompt, test_output=False, phase="rising_action"
         )
 
     def _write_climax(self, idx):
-        prompt = climax_writing_prompt.format(section="Climax", scratchpad=self.scratchpad)
+        identifiers = self.get_identifiers(self.scratchpad)
+        prompt = climax_writing_prompt.format(identifiers=identifiers, section="Climax", scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="write", prompt=prompt, test_output=False, phase="climax"
+            model=self.model, processor=self.processor, i=idx, method="write_ar", prompt=prompt, test_output=False, phase="climax"
         )
 
     def _write_falling_action(self, idx):
-        prompt = falling_action_writing_prompt.format(section="Falling Action", scratchpad=self.scratchpad)
+        identifiers = self.get_identifiers(self.scratchpad)
+        prompt = falling_action_writing_prompt.format(identifiers=identifiers, section="Falling Action", scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="write", prompt=prompt, test_output=False, phase="falling_action"
+            model=self.model, processor=self.processor, i=idx, method="write_ar", prompt=prompt, test_output=False, phase="falling_action"
         )
 
     def _write_resolution(self, idx):
-        prompt = resolution_writing_prompt.format(section="Resolution", scratchpad=self.scratchpad)
+        identifiers = self.get_identifiers(self.scratchpad)
+        prompt = resolution_writing_prompt.format(identifiers=identifiers, section="Resolution", scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="write", prompt=prompt, test_output=False, phase="resolution"
+            model=self.model, processor=self.processor, i=idx, method="write_ar", prompt=prompt, test_output=False, phase="resolution"
         )

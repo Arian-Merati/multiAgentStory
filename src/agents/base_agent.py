@@ -1,6 +1,7 @@
 import json
 import time
 import argparse
+import re
 
 # Import the specific components from your other files
 from tasks import trivia_creative_writing
@@ -21,6 +22,25 @@ class BaseAgent:
         self.device = device
         self.task = task
         self.scratchpad = scratchpad
+        
+            
+    def get_identifiers(self, scratchpad):
+        """
+        Extract identifiers from the scratchpad.
+        """
+        identifiers = re.findall(r'\[(.*?)\]', scratchpad)
+        if len(identifiers) == 1:
+            return identifiers[0]
+        elif len(identifiers) == 2:
+            return identifiers[0] + " and the " + identifiers[1]
+        if not identifiers:
+            return None
+        last_identifier = identifiers.pop()
+        identifiers_str = ", the ".join(identifiers)
+        identifiers_str += " and the " + last_identifier 
+        
+        return identifiers_str
+    
         
     def process_single_instance(self, model, processor, i, method, **kwargs):
         ground_truth = None

@@ -31,8 +31,8 @@ def load_gemma_model(model_id, device):
     return model, processor
 
 
-def generate_text_with_gemma(model, processor, prompt, device):
-    #print(f"Generating text with prompt: {prompt}")
+def generate_text_with_gemma(model, processor, prompt, device, temperature=None):
+    print(f"Generating text with prompt: {prompt}")
     messages = [
     {
         "role": "system",
@@ -54,16 +54,30 @@ def generate_text_with_gemma(model, processor, prompt, device):
     ).to(device)
 
     input_len = inputs["input_ids"].shape[-1]
+    
+    generation_args = {
+        "max_new_tokens": 5000,
+    }
 
-    print(f"input prompt: \n {prompt}\n")
+    # 2. Conditionally add temperature and enable sampling
+    if temperature is not None:
+        print(f"   -> Generating with custom temperature: {temperature}")
+        generation_args['temperature'] = temperature
+        generation_args['do_sample'] = True
+    else:
+        # This ensures the default behavior is deterministic
+        generation_args['do_sample'] = False
+        
+    print(f"   -> Generation args: {generation_args}")
+
     with torch.inference_mode():
-        generation = model.generate(**inputs, max_new_tokens=5000, do_sample=False)
+        # generation = model.generate(**inputs, max_new_tokens=5000, do_sample=False)
+        generation = model.generate(**inputs, **generation_args)
         generation = generation[0][input_len:]
 
     decoded = processor.decode(generation, skip_special_tokens=True)
-    print(f"answer: \n {decoded}\n")
+    print(f"answer: {decoded}")
     return decoded
-
 
 def get_probability_of_true(model, processor, prompt, device):
     """
@@ -88,6 +102,9 @@ def get_probability_of_true(model, processor, prompt, device):
     
     # print("REACHED")
     
+    full_prompt_text = processor.decode(inputs['input_ids'][0], skip_special_tokens=True)
+    print(f"Full prompt text that model sees:\n{full_prompt_text}")
+    
     with torch.inference_mode():
         outputs = model(**inputs)
         
@@ -98,7 +115,7 @@ def get_probability_of_true(model, processor, prompt, device):
 
     # Apply softmax to convert logits to probabilities
     probabilities = F.softmax(next_token_logits, dim=-1)
-    print(probabilities.shape)
+    # print(probabilities.shape)
     
     k = 5
     top_k_probs, top_k_indices = torch.topk(probabilities, k)

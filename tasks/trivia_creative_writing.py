@@ -19,7 +19,7 @@ class TriviaCreativeWritingTask(Task):
     def get_input(self, idx: int):
         return self.data[idx]
 
-    def get_input_prompt(self, idx, method, **kwargs):
+    def get_input_prompt(self, idx, scratchpad, method, **kwargs):
         datapoint = self.data[idx]
         questions = datapoint["questions"]
         topic = datapoint["topic"]
@@ -64,6 +64,8 @@ class TriviaCreativeWritingTask(Task):
         #     input_prompt = confidence_assessment_question_prompt.format(question=kwargs['question'])
         elif method == "answer_all":
             input_prompt = answer_all_prompt.format(n=n, questions=questions_str)
+        elif method == "write_standard":
+            input_prompt = write_standard.format(topic=topic, scratchpad=scratchpad)
         elif method == "confidence_assessment":
             phase = kwargs["phase"]
             if phase == "question":
@@ -155,7 +157,7 @@ class TriviaCreativeWritingTask(Task):
                 - str: the story
                 - bool: whether the story is successfully parsed from the raw genration
         '''
-        if method in ["standard", "self_refine", "persona", "one_at_a_time_focus"]:
+        if method in ["standard", "self_refine", "persona", "one_at_a_time_focus", "write_standard"]:
             return response, True
         
         elif method in ["cot", "one_at_a_time_plan", "double_check_questions", "structured_decomposition", "questions_first"]:
@@ -211,14 +213,15 @@ class TriviaCreativeWritingTask(Task):
             
         elif method == "plan_ar":
             phase = kwargs["phase"]
-            if phase == "central_conflict":
+            if phase == "conflict":
                 if "Central conflict:" in response:
                     return response.split("Central conflict:")[1].strip(), True
                 elif "central conflict" in response:
                     return response.split("central conflict:")[1].strip(), True
                 else:
                     return response, False
-            elif phase == "character":
+            elif phase == "characters":
+                print("response:", response)
                 if "Character descriptions:" in response:
                     return response.split("Character descriptions:")[1].strip(), True
                 elif "character descriptions" in response:

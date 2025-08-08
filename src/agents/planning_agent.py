@@ -3,8 +3,8 @@ from prompts import *
 
 
 class PlanningAgent(BaseAgent):
-    def __init__(self, model, processor, device, scratchpad):
-        super().__init__(model, processor, device, scratchpad)
+    def __init__(self, model, processor, task, device, scratchpad):
+        super().__init__(model, processor, task, device, scratchpad)
         
 
     def plan_ar(self, i, scratchpad):
@@ -15,8 +15,8 @@ class PlanningAgent(BaseAgent):
         
         self.scratchpad = scratchpad
         
-        initial_task_prompt = self.task.get_input_prompt(i, method="standard")
-        self.scratchpad += f"\n\n[Creative Writing Task]\n{initial_task_prompt}"
+        initial_task_prompt = self.task.get_input_prompt(i, scratchpad, method="write_standard")
+        self.scratchpad += f"[Creative Writing Task]\n{initial_task_prompt}"
         
         print("  - Generating [Character Descriptions]...")
         character_result = self._generate_characters(i)
@@ -37,27 +37,31 @@ class PlanningAgent(BaseAgent):
         print(" Planning complete.")
 
     def _generate_conflict(self, idx):
-        prompt = conflict_plan_prompt.format(scratchpad=self.scratchpad)
+        identifiers = self.get_identifiers(self.scratchpad)
+        prompt = conflict_plan_prompt.format(identifiers=identifiers, scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="plan", prompt=prompt, test_output=False, phase="conflict"
+            model=self.model, processor=self.processor, i=idx, method="plan_ar", prompt=prompt, test_output=False, phase="conflict"
         )
 
     def _generate_characters(self, idx):
-        prompt = character_plan_prompt.format(scratchpad=self.scratchpad)
+        identifiers = self.get_identifiers(self.scratchpad)
+        prompt = character_plan_prompt.format(identifiers=identifiers, scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="plan", prompt=prompt, test_output=False, phase="characters"
+            model=self.model, processor=self.processor,i=idx, method="plan_ar", prompt=prompt, test_output=False, phase="characters"
         )
 
     def _generate_setting(self, idx):
-        prompt = setting_plan_prompt.format(scratchpad=self.scratchpad)
+        identifiers = self.get_identifiers(self.scratchpad)
+        prompt = setting_plan_prompt.format(identifiers=identifiers, scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="plan", prompt=prompt, test_output=False, phase="setting"
+            model=self.model, processor=self.processor, i=idx, method="plan_ar", prompt=prompt, test_output=False, phase="setting"
         )
 
     def _generate_plot(self, idx):
-        prompt = plot_plan_prompt.format(scratchpad=self.scratchpad)
+        identifiers = self.get_identifiers(self.scratchpad)
+        prompt = plot_plan_prompt.format(identifiers=identifiers, scratchpad=self.scratchpad)
         return self.process_single_instance(
-            i=idx, method="plan", prompt=prompt, test_output=False, phase="plot"
+            model=self.model, processor=self.processor, i=idx, method="plan_ar", prompt=prompt, test_output=False, phase="plot"
         )
 
         

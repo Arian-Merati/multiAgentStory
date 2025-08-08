@@ -23,9 +23,9 @@ AGENT_MAPPING = {
     # "confidence_assessment": CheckingAgent,
     # "double_check_all": CheckingAgent,
     # "double_check_oaat": CheckingAgent,
-    "plan_AR": PlanningAgent,
+    "plan_ar": PlanningAgent,
     # "plan_cot": PlanningAgent,
-    "write_AR": WritingAgent,
+    "write_ar": WritingAgent,
     "write_standard": WritingAgent,
 }
 
@@ -35,20 +35,7 @@ TASK_FILE = "trivia_creative_writing_100_n_5.jsonl"
 def save_progress(logs, output_file):
     with open(output_file, "w") as f:
         json.dump(logs, f, indent=4)
-        
-def get_identifiers(scratchpad):
-    """
-    Extract identifiers from the scratchpad.
-    """
-    identifiers = re.findall(r'\[(.*?)\]', scratchpad)
-    if not identifiers:
-        return None
-    last_identifier = identifiers.pop()
-    identifiers_str = ", the ".join(identifiers)
-    identifiers_str += " and the " + last_identifier 
-    
-    return identifiers_str
-    
+
 
 def main():
     
@@ -112,7 +99,7 @@ def main():
                 elif agent_name == "plan_ar":
                     agent.plan_ar(i, scratchpad=scratchpad)
                 elif agent_name == "write_ar":
-                    agent.write_ar(i, scratchpad)
+                    agent.write_ar(i, scratchpad=scratchpad)
                 # elif agent_name == "write_standard":
                 #     agent_
                 # elif agent_name == "plan_standard":
@@ -134,7 +121,7 @@ def main():
         # avg_f1 = f1_sum / len(f1_full_list)
             
         
-        if experiment_name in ["one_at_a_time", "double_check"]:
+        if experiment_name in ["one_at_a_time", "double_check", "confidence_assessment"]:
             print(results)
             question_count_sum = len(task) * results[55]["question_answers"]["0"]['evaluation']['question_count']
             for i, entry in results.items():

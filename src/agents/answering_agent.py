@@ -19,7 +19,7 @@ class AnsweringAgent(BaseAgent):
             # Add the chosen answer to our new list
             random_answers.append(random_choice)
         words_to_include = ", ".join(random_answers)
-        self.scratchpad += f"[Words To Include] {words_to_include}"
+        # self.scratchpad += f"[Words To Include] {words_to_include}"
         return random_answers
     
     def answer_all(self, model, processor, i, method, scratchpad, **kwargs):
@@ -28,7 +28,7 @@ class AnsweringAgent(BaseAgent):
         """
         output = {}
         self.scratchpad = scratchpad
-        qa_prompt = self.task.get_input_prompt(i, method, **kwargs) 
+        qa_prompt = self.task.get_input_prompt(i, method, scratchpad, **kwargs) 
         question_answer_output = self.process_single_instance(model, processor, i, method, prompt=qa_prompt, test_output=True, **kwargs)
         # answers = question_answer_output['unwrapped_text']
         output = {
@@ -49,7 +49,7 @@ class AnsweringAgent(BaseAgent):
         self.scratchpad = scratchpad
         output = {}
         answers = []
-        question_prompts, questions = self.task.get_input_prompt(i, method, phase="question", **kwargs)
+        question_prompts, questions = self.task.get_input_prompt(i, method, scratchpad, phase="question", **kwargs)
         # for question_prompt, question in zip(question_prompts, questions):
         j = 0
         for prompt in question_prompts:
@@ -65,7 +65,7 @@ class AnsweringAgent(BaseAgent):
             j += 1
             answers.append(question_answer_output["unwrapped_text"])
         words_to_include = ", ".join(output)
-        self.scratchpad += f"[Words To Include] {words_to_include}"
+        # self.scratchpad += f"[Words To Include] {words_to_include}"
         return output, answers
 
             
